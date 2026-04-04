@@ -31,9 +31,7 @@ public class UserServiceImpl implements UserService {
         this.jwtUtil = jwtUtil;
     }
 
-    // -----------------------------------------------
-    // SIGNUP
-    // -----------------------------------------------
+  
     @Override
     public AuthResponse signup(SignupRequest request) {
 
@@ -46,7 +44,7 @@ public class UserServiceImpl implements UserService {
 
         String normalizedRole = normalizeRole(request.getRole());
 
-        // Step 2 - Create new User object
+       
         User newUser = new User();
         newUser.setName(request.getName());
         newUser.setEmail(request.getEmail());
@@ -55,10 +53,10 @@ public class UserServiceImpl implements UserService {
         newUser.setRole(normalizedRole);
         newUser.setCreatedAt(LocalDateTime.now());
 
-        // Step 3 - Save to database
+      
         userRepository.save(newUser);
 
-        // step 4 - if worker, create worker profile
+ 
         if ("WORKER".equals(normalizedRole)) {
             Worker workerProfile = new Worker();
             workerProfile.setUser(newUser);
@@ -72,21 +70,17 @@ public class UserServiceImpl implements UserService {
         return new AuthResponse("Signup successful!", newUser.getRole(), true);
     }
 
-    // -----------------------------------------------
-    // LOGIN
-    // -----------------------------------------------
     @Override
     public AuthResponse login(LoginRequest request) {
 
-        // Step 1 - Find user by email
+        
         User user = userRepository.findByEmail(request.getEmail()).orElse(null);
 
-        // Step 2 - Check if user exists
+      
         if (user == null) {
             return new AuthResponse("Email not found!", null, false);
         }
 
-        // Step 3 - Check password
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             return new AuthResponse("Wrong password!", null, false);
         }

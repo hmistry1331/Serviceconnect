@@ -44,8 +44,7 @@ public class ServiceCategoryServiceImpl implements ServiceCategoryService {
                     new RuntimeException("Category not found!")
                 );
 
-        // Flip the status!
-        // true → false OR false → true
+        
         category.setActive(!category.isActive());
         serviceCategoryRepository.save(category);
 

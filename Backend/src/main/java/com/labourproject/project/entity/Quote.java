@@ -15,7 +15,7 @@ public class Quote {
     @JoinColumn(name = "job_request_id", nullable = false)
     private Job_Requests jobRequest;
 
-    // Which worker sent this quote?
+   
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "worker_id", nullable = false)
     private Worker worker;

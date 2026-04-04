@@ -13,11 +13,11 @@ public class Job_Requests {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
-    private User customer; // The user who made the request
+    private User customer; 
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "worker_id", nullable = true)
-    private Worker worker; // The worker assigned to the request (can be null if not assigned yet)
+    private Worker worker; 
 
     @Column(name = "problem_description")
     private String problemDescription;
@@ -28,8 +28,7 @@ public class Job_Requests {
     @Column(name = "customer_location")
     private String customerLocation;
 
-    // PENDING → ACCEPTED → IN_PROGRESS → COMPLETED
-    // ↘ CANCELLED
+    
     @Column(name = "status")
     private String status;
 
@@ -59,7 +58,7 @@ public class Job_Requests {
         this.updatedAt = updatedAt;
     }
 
-    // create getters and setters for all fields
+  
     public User getCustomer() {
         return customer;
     }
