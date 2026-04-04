@@ -1,0 +1,22 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor settings
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.*
+
+# Node/npm leftovers (safe even if frontend is removed)
+node_modules/
+npm-debug.log*
+
+# Build outputs at repo root
+dist/
+build/
