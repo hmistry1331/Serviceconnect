@@ -28,6 +28,15 @@ public class Job_Requests {
     @Column(name = "customer_location")
     private String customerLocation;
 
+    @Column(name = "customer_city")
+    private String customerCity;
+
+    @Column(name = "customer_latitude")
+    private Double customerLatitude;
+
+    @Column(name = "customer_longitude")
+    private Double customerLongitude;
+
     
     @Column(name = "status")
     private String status;
@@ -113,6 +122,30 @@ public class Job_Requests {
 
     public void setCustomerLocation(String customerLocation) {
         this.customerLocation = customerLocation;
+    }
+
+    public String getCustomerCity() {
+        return customerCity;
+    }
+
+    public void setCustomerCity(String customerCity) {
+        this.customerCity = customerCity;
+    }
+
+    public Double getCustomerLatitude() {
+        return customerLatitude;
+    }
+
+    public void setCustomerLatitude(Double customerLatitude) {
+        this.customerLatitude = customerLatitude;
+    }
+
+    public Double getCustomerLongitude() {
+        return customerLongitude;
+    }
+
+    public void setCustomerLongitude(Double customerLongitude) {
+        this.customerLongitude = customerLongitude;
     }
 
     public LocalDateTime getCreatedAt() {

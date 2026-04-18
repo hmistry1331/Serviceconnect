@@ -12,7 +12,7 @@ public interface JobRequestService {
 
     
     List<JobRequestResponse> getPendingByCategory(String category);
-    List<JobRequestResponse> getRequestsByCustomer(int customerId);
+    List<JobRequestResponse> getRequestsByCustomer(int customerId, String requesterEmail);
     List<JobRequestResponse> getAssignedRequestsForWorker(String workerEmail);
     List<JobRequestResponse> getJobFeedForWorker(String workerEmail);
 

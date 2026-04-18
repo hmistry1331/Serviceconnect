@@ -1,5 +1,6 @@
 package com.labourproject.project.rest;
 
+import com.labourproject.project.dto.request.GoogleAuthRequest;
 import com.labourproject.project.dto.request.LoginRequest;
 import com.labourproject.project.dto.request.SignupRequest;
 import com.labourproject.project.dto.response.AuthResponse;
@@ -31,6 +32,18 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
 
         AuthResponse response = userService.login(request);
+
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        }
+
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    @PostMapping("/oauth/google/callback")
+    public ResponseEntity<AuthResponse> googleCallback(@RequestBody GoogleAuthRequest request) {
+
+        AuthResponse response = userService.loginWithGoogle(request.getCode(), request.getRedirectUri());
 
         if (response.isSuccess()) {
             return ResponseEntity.ok(response);

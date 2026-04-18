@@ -70,9 +70,10 @@ public class JobRequestController {
 
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<List<JobRequestResponse>> getByCustomer(
-            @PathVariable int customerId) {
+            @PathVariable int customerId,
+            Authentication authentication) {
         return ResponseEntity.ok(
-            jobRequestService.getRequestsByCustomer(customerId)
+            jobRequestService.getRequestsByCustomer(customerId, authentication.getName())
         );
     }
 }

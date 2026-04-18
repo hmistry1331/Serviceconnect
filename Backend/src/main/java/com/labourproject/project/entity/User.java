@@ -31,12 +31,19 @@ public class User {
     @Column(name="password", nullable = false)
     private String password;
 
+    @Column(name="is_suspended", nullable = false)
+    private boolean isSuspended = false;
     public User() {
 
     }
     public User(String name, String email) {
         this.name = name;
         this.email = email;
+        this.createdAt = LocalDateTime.now();
+        this.role = "USER";
+        this.phone = "";
+        this.password = "";
+        this.isSuspended = false;
     }
 
     public int getId() {
@@ -94,7 +101,12 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
-
+    public boolean isSuspended() {
+        return isSuspended;
+    }
+    public void setSuspended(boolean isSuspended) {
+        this.isSuspended = isSuspended;
+    }
     @Override
     public String toString() {
         return "User{" +
@@ -104,6 +116,7 @@ public class User {
                 ", createdAt=" + createdAt +
                 ", role='" + role + '\'' +
                 ", phone='" + phone + '\'' +
+                ", isSuspended=" + isSuspended +
                 '}';
     }
 }

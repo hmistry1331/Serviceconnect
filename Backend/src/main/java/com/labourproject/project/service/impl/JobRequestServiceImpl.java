@@ -1,5 +1,6 @@
 package com.labourproject.project.service.impl;
 
+import com.labourproject.project.config.GujaratLocationCatalog;
 import com.labourproject.project.dao.JobRequestRepository;
 import com.labourproject.project.dao.UserRepository;
 import com.labourproject.project.dao.WorkerRepository;
@@ -23,6 +24,8 @@ import java.util.stream.Collectors;
 @Service
 public class JobRequestServiceImpl implements JobRequestService {
 
+        private static final double WORKER_FEED_RADIUS_KM = 10.0;
+
         @Autowired
         private JobRequestRepository jobRequestRepository;
 
@@ -43,12 +46,27 @@ public class JobRequestServiceImpl implements JobRequestService {
                                 .orElseThrow(() -> new RuntimeException("Customer not found!"));
                 
                 String finalCategory = determineCategory(dto);
+                GujaratLocationCatalog.CityPoint cityPoint;
+                try {
+                        cityPoint = GujaratLocationCatalog
+                                        .getCityPoint(dto.getCity() != null ? dto.getCity() : dto.getLocation());
+                } catch (IllegalArgumentException ex) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
+                }
 
                 Job_Requests jobRequest = new Job_Requests();
+                double[] resolvedCoordinates = resolveCoordinatesWithinCity(
+                                cityPoint,
+                                dto.getLatitude(),
+                                dto.getLongitude());
+
                 jobRequest.setCustomer(customer);
                 jobRequest.setCategory(finalCategory);
                 jobRequest.setProblemDescription(dto.getProblemDescription());
-                jobRequest.setCustomerLocation(dto.getLocation());
+                jobRequest.setCustomerLocation(cityPoint.getCity());
+                jobRequest.setCustomerCity(cityPoint.getCity());
+                jobRequest.setCustomerLatitude(resolvedCoordinates[0]);
+                jobRequest.setCustomerLongitude(resolvedCoordinates[1]);
                 jobRequest.setBudgetAmount(dto.getBudgetAmount());
                 jobRequest.setStatus("PENDING");
                 jobRequest.setCreatedAt(LocalDateTime.now());
@@ -117,6 +135,18 @@ public class JobRequestServiceImpl implements JobRequestService {
                         throw new ResponseStatusException(
                                         HttpStatus.FORBIDDEN,
                                         "Only workers can accept job requests!");
+                }
+
+                if (!"PENDING".equalsIgnoreCase(jobRequest.getStatus())) {
+                        throw new ResponseStatusException(
+                                        HttpStatus.CONFLICT,
+                                        "Only PENDING jobs can be accepted.");
+                }
+
+                if (jobRequest.getWorker() != null) {
+                        throw new ResponseStatusException(
+                                        HttpStatus.CONFLICT,
+                                        "This job is already assigned to a worker.");
                 }
 
         
@@ -197,7 +227,18 @@ public class JobRequestServiceImpl implements JobRequestService {
         }
 
         @Override
-        public List<JobRequestResponse> getRequestsByCustomer(int customerId) {
+        public List<JobRequestResponse> getRequestsByCustomer(int customerId, String requesterEmail) {
+
+                User requester = userRepository.findByEmail(requesterEmail)
+                                .orElseThrow(() -> new ResponseStatusException(
+                                                HttpStatus.UNAUTHORIZED,
+                                                "User not found!"));
+
+                if (requester.getId() != customerId) {
+                        throw new ResponseStatusException(
+                                        HttpStatus.FORBIDDEN,
+                                        "You can only access your own job requests!");
+                }
 
                 User customer = userRepository.findById(customerId)
                                 .orElseThrow(() -> new RuntimeException("Customer not found!"));
@@ -252,16 +293,14 @@ public class JobRequestServiceImpl implements JobRequestService {
 
                 
                 String tradeCategory = worker.getTradeCategory();
-                String serviceArea = worker.getServiceArea();
+                GujaratLocationCatalog.CityPoint workerPoint = resolveWorkerPoint(worker);
 
-                
                 List<Job_Requests> jobs = jobRequestRepository
-                                .findWorkerJobFeed(tradeCategory, serviceArea);
-
-                if (jobs.isEmpty()) {
-                        jobs = jobRequestRepository
-                                        .findPendingJobsByCategory(tradeCategory);
-                }
+                                .findWorkerJobFeedByRadius(
+                                                tradeCategory,
+                                                workerPoint.getLatitude(),
+                                                workerPoint.getLongitude(),
+                                                WORKER_FEED_RADIUS_KM);
 
                 
                 return jobs.stream()
@@ -281,11 +320,44 @@ public class JobRequestServiceImpl implements JobRequestService {
                                 jobRequest.getCategory(),
                                 jobRequest.getProblemDescription(),
                                 jobRequest.getCustomerLocation(),
+                                jobRequest.getCustomerCity(),
+                                jobRequest.getCustomerLatitude(),
+                                jobRequest.getCustomerLongitude(),
                                 jobRequest.getBudgetAmount(),
                                 jobRequest.getStatus(),
                                 workerName,
                                 jobRequest.getCreatedAt(),
                                 jobRequest.getUpdatedAt()
                         );
+        }
+
+        private GujaratLocationCatalog.CityPoint resolveWorkerPoint(Worker worker) {
+                GujaratLocationCatalog.CityPoint cityPoint = GujaratLocationCatalog.getCityPoint(
+                                worker.getHomeCity() != null ? worker.getHomeCity() : worker.getServiceArea());
+
+                if (GujaratLocationCatalog.isValidCoordinate(worker.getHomeLatitude(), worker.getHomeLongitude())) {
+                        return new GujaratLocationCatalog.CityPoint(
+                                        cityPoint.getCity(),
+                                        worker.getHomeLatitude(),
+                                        worker.getHomeLongitude());
+                }
+
+                return cityPoint;
+        }
+
+        private double[] resolveCoordinatesWithinCity(
+                        GujaratLocationCatalog.CityPoint cityPoint,
+                        Double latitude,
+                        Double longitude) {
+                if (latitude == null && longitude == null) {
+                        return new double[] { cityPoint.getLatitude(), cityPoint.getLongitude() };
+                }
+
+                if (!GujaratLocationCatalog.isValidCoordinate(latitude, longitude)) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                        "Invalid latitude/longitude values.");
+                }
+
+                return new double[] { latitude, longitude };
         }
 }

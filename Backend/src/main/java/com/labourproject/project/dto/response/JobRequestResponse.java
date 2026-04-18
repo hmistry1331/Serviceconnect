@@ -9,6 +9,9 @@ public class JobRequestResponse {
     private String category;
     private String description;
     private String location;
+    private String city;
+    private Double latitude;
+    private Double longitude;
     private double budgetAmount;
     private String status;
     private String workerName; 
@@ -20,6 +23,7 @@ public class JobRequestResponse {
 
     public JobRequestResponse(int id, String customerName, String category,
             String description, String location,
+            String city, Double latitude, Double longitude,
             double budgetAmount, String status,
             String workerName, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
@@ -27,6 +31,9 @@ public class JobRequestResponse {
         this.category = category;
         this.description = description;
         this.location = location;
+        this.city = city;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.budgetAmount = budgetAmount;
         this.status = status;
         this.workerName = workerName;
@@ -74,6 +81,30 @@ public class JobRequestResponse {
         this.location = location;
     }
 
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
     public double getBudgetAmount() {
         return budgetAmount;
     }
@@ -117,6 +148,9 @@ public class JobRequestResponse {
                 ", category='" + category + '\'' +
                 ", description='" + description + '\'' +
                 ", location='" + location + '\'' +
+                ", city='" + city + '\'' +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
                 ", budgetAmount=" + budgetAmount +
                 ", status='" + status + '\'' +
                 ", workerName='" + workerName + '\'' +

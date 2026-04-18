@@ -1,5 +1,7 @@
 package com.labourproject.project.security;
 
+import com.labourproject.project.dao.UserRepository;
+import com.labourproject.project.entity.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +23,9 @@ public class JwtFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -38,6 +43,14 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 String email = jwtUtil.getEmailFromToken(token);
                 String role = jwtUtil.getRoleFromToken(token);
+
+                User user = userRepository.findByEmail(email).orElse(null);
+
+                if (user != null && user.isSuspended()) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
                 String normalizedRole = normalizeRole(role);
 
 

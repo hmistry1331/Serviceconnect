@@ -22,15 +22,22 @@ public interface JobRequestRepository
                         String status,
                         String category);
 
-        @Query("SELECT j FROM Job_Requests j " +
+        @Query(value = "SELECT j.* FROM job_requests j " +
                         "WHERE j.status = 'PENDING' " +
                         "AND LOWER(j.category) = LOWER(:category) " +
-                        "AND LOWER(j.customerLocation) " +
-                        "LIKE LOWER(CONCAT('%', :location, '%')) " +
-                        "ORDER BY j.createdAt DESC")
-        List<Job_Requests> findWorkerJobFeed(
+                        "AND j.customer_latitude IS NOT NULL " +
+                        "AND j.customer_longitude IS NOT NULL " +
+                        "AND (6371 * ACOS(LEAST(1.0, GREATEST(-1.0, " +
+                        "COS(RADIANS(:workerLat)) * COS(RADIANS(j.customer_latitude)) * " +
+                        "COS(RADIANS(j.customer_longitude) - RADIANS(:workerLng)) + " +
+                        "SIN(RADIANS(:workerLat)) * SIN(RADIANS(j.customer_latitude))" +
+                        ")))) <= :radiusKm " +
+                        "ORDER BY j.created_at DESC", nativeQuery = true)
+        List<Job_Requests> findWorkerJobFeedByRadius(
                         @Param("category") String category,
-                        @Param("location") String location);
+                        @Param("workerLat") double workerLatitude,
+                        @Param("workerLng") double workerLongitude,
+                        @Param("radiusKm") double radiusKm);
 
         @Query("SELECT j FROM Job_Requests j " +
                         "WHERE j.status = 'PENDING' " +

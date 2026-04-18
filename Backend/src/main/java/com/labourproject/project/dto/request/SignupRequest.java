@@ -12,6 +12,8 @@ public class SignupRequest {
     private String tradeCategory;
     private int experienceYears; 
     private String serviceArea; 
+    private Double workerLatitude;
+    private Double workerLongitude;
 
     public SignupRequest() {}
 
@@ -38,6 +40,10 @@ public class SignupRequest {
 
         public String getServiceArea() { return serviceArea; }
     public void setServiceArea(String serviceArea) { this.serviceArea = serviceArea; }
+    public Double getWorkerLatitude() { return workerLatitude; }
+    public void setWorkerLatitude(Double workerLatitude) { this.workerLatitude = workerLatitude; }
+    public Double getWorkerLongitude() { return workerLongitude; }
+    public void setWorkerLongitude(Double workerLongitude) { this.workerLongitude = workerLongitude; }
     @Override
     public String toString() {
         return "SignupRequest{" +
@@ -48,6 +54,8 @@ public class SignupRequest {
                 ", tradeCategory='" + tradeCategory + '\'' +
                 ", experienceYears=" + experienceYears +
                 ", serviceArea='" + serviceArea + '\'' +
+                ", workerLatitude=" + workerLatitude +
+                ", workerLongitude=" + workerLongitude +
                 '}';
     }
 }

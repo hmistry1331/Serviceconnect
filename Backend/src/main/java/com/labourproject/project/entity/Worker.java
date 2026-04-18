@@ -29,6 +29,15 @@ public class Worker {
     @Column(name = "service_area")
     private String serviceArea;
 
+    @Column(name = "home_city")
+    private String homeCity;
+
+    @Column(name = "home_latitude")
+    private Double homeLatitude;
+
+    @Column(name = "home_longitude")
+    private Double homeLongitude;
+
     @Column(name = "rejection_reason")
     private String rejectionReason;
 
@@ -99,6 +108,30 @@ public class Worker {
         this.rejectionReason = rejectionReason;
     }
 
+    public String getHomeCity() {
+        return homeCity;
+    }
+
+    public void setHomeCity(String homeCity) {
+        this.homeCity = homeCity;
+    }
+
+    public Double getHomeLatitude() {
+        return homeLatitude;
+    }
+
+    public void setHomeLatitude(Double homeLatitude) {
+        this.homeLatitude = homeLatitude;
+    }
+
+    public Double getHomeLongitude() {
+        return homeLongitude;
+    }
+
+    public void setHomeLongitude(Double homeLongitude) {
+        this.homeLongitude = homeLongitude;
+    }
+
     @Override
     public String toString() {
         return "Worker{" +
@@ -109,6 +142,9 @@ public class Worker {
                 ", isAvailable=" + isAvailable +
                 ", verificationStatus='" + verificationStatus + '\'' +
                 ", serviceArea='" + serviceArea + '\'' +
+                ", homeCity='" + homeCity + '\'' +
+                ", homeLatitude=" + homeLatitude +
+                ", homeLongitude=" + homeLongitude +
                 ", rejectionReason='" + rejectionReason + '\'' +
                 '}';
     }
