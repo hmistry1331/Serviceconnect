@@ -57,7 +57,6 @@ public class UserServiceImpl implements UserService {
         this.jwtUtil = jwtUtil;
     }
 
-  
     @Override
     @Transactional
     public AuthResponse signup(SignupRequest request) {
@@ -99,7 +98,6 @@ public class UserServiceImpl implements UserService {
         newUser.setRole(normalizedRole);
         newUser.setCreatedAt(LocalDateTime.now());
 
-      
         userRepository.save(newUser);
 
         if ("WORKER".equals(normalizedRole)) {
@@ -121,10 +119,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public AuthResponse login(LoginRequest request) {
 
-        
         User user = userRepository.findByEmail(request.getEmail()).orElse(null);
 
-      
         if (user == null) {
             return new AuthResponse("Email not found!", null, false);
         }
@@ -145,7 +141,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public AuthResponse loginWithGoogle(String code, String redirectUri) {
+    public AuthResponse loginWithGoogle(
+            String code, String redirectUri, String role, String tradeCategory, int experienceYears,
+            String serviceArea) {
         if (code == null || code.isBlank()) {
             return new AuthResponse("Google authorization code is required!", null, false);
         }
@@ -166,15 +164,15 @@ public class UserServiceImpl implements UserService {
         try {
             RestTemplate restTemplate = new RestTemplate();
 
-                HttpHeaders tokenHeaders = new HttpHeaders();
-                tokenHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            HttpHeaders tokenHeaders = new HttpHeaders();
+            tokenHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-                MultiValueMap<String, String> tokenBody = new LinkedMultiValueMap<>();
-                tokenBody.add("code", code);
-                tokenBody.add("client_id", googleClientId);
-                tokenBody.add("client_secret", googleClientSecret);
-                tokenBody.add("redirect_uri", effectiveRedirectUri);
-                tokenBody.add("grant_type", "authorization_code");
+            MultiValueMap<String, String> tokenBody = new LinkedMultiValueMap<>();
+            tokenBody.add("code", code);
+            tokenBody.add("client_id", googleClientId);
+            tokenBody.add("client_secret", googleClientSecret);
+            tokenBody.add("redirect_uri", effectiveRedirectUri);
+            tokenBody.add("grant_type", "authorization_code");
 
             ResponseEntity<Map<String, Object>> tokenHttpResponse = restTemplate.exchange(
                     "https://oauth2.googleapis.com/token",
@@ -183,7 +181,7 @@ public class UserServiceImpl implements UserService {
                     new ParameterizedTypeReference<Map<String, Object>>() {
                     });
 
-                Map<String, Object> tokenResponse = tokenHttpResponse.getBody();
+            Map<String, Object> tokenResponse = tokenHttpResponse.getBody();
 
             if (tokenResponse == null || tokenResponse.get("access_token") == null) {
                 return new AuthResponse("Unable to exchange Google authorization code.", null, false);
@@ -191,8 +189,8 @@ public class UserServiceImpl implements UserService {
 
             String accessToken = String.valueOf(tokenResponse.get("access_token"));
 
-                HttpHeaders profileHeaders = new HttpHeaders();
-                profileHeaders.setBearerAuth(accessToken);
+            HttpHeaders profileHeaders = new HttpHeaders();
+            profileHeaders.setBearerAuth(accessToken);
 
             ResponseEntity<Map<String, Object>> profileResponse = restTemplate.exchange(
                     "https://www.googleapis.com/oauth2/v3/userinfo",
@@ -201,7 +199,7 @@ public class UserServiceImpl implements UserService {
                     new ParameterizedTypeReference<Map<String, Object>>() {
                     });
 
-                Map<String, Object> profile = profileResponse.getBody();
+            Map<String, Object> profile = profileResponse.getBody();
 
             if (profile == null) {
                 return new AuthResponse("Unable to fetch Google user profile.", null, false);
@@ -218,22 +216,52 @@ public class UserServiceImpl implements UserService {
             if (!emailVerified) {
                 return new AuthResponse("Google account email is not verified.", null, false);
             }
+            boolean isnewUser = !userRepository.existsByEmail(email);
+            String resolvedRole = normalizeRole(
+                    (role != null && !role.isBlank()) ? role : "CUSTOMER");
+            User user = userRepository.findByEmail(email).orElse(null);
 
-            User user = userRepository.findByEmail(email).orElseGet(() -> {
-                User newUser = new User();
-                newUser.setName((name != null && !name.isBlank()) ? name : email.split("@")[0]);
-                newUser.setEmail(email);
-                newUser.setRole("CUSTOMER");
-                newUser.setPhone("GOOGLE_AUTH");
-                newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
-                newUser.setCreatedAt(LocalDateTime.now());
-                return userRepository.save(newUser);
-            });
-
+            if (user == null) {
+                return new AuthResponse(
+                        "No account found for this Google email! " +
+                                "Please sign up first!",
+                        null,
+                        false
+                    );
+            }
             if (user.isSuspended()) {
                 return new AuthResponse("Your account is suspended. Please contact support.", null, false);
             }
+            if (isnewUser && "WORKER".equals(resolvedRole)) {
+                if (serviceArea == null || serviceArea.isBlank()) {
+                    return new AuthResponse(
+                            "Service area is required for worker registration!",
+                            null, false);
+                }
+                if (tradeCategory == null || tradeCategory.isBlank()) {
+                    return new AuthResponse(
+                            "Trade category is required for worker registration!",
+                            null, false);
+                }
 
+                try {
+                    GujaratLocationCatalog.CityPoint cityPoint = GujaratLocationCatalog.getCityPoint(serviceArea);
+                    Worker workerProfile = new Worker();
+                    workerProfile.setUser(user);
+                    workerProfile.setTradeCategory(tradeCategory);
+                    workerProfile.setExperienceYears(experienceYears);
+                    workerProfile.setServiceArea(cityPoint.getCity());
+                    workerProfile.setHomeCity(cityPoint.getCity());
+                    workerProfile.setHomeLatitude(cityPoint.getLatitude());
+                    workerProfile.setHomeLongitude(cityPoint.getLongitude());
+                    workerProfile.setVerificationStatus("PENDING");
+                    workerProfile.setAvailable(false); // default to unavailable until verified
+                    workerRepository.save(workerProfile);
+                } catch (IllegalArgumentException ex) {
+                    return new AuthResponse(ex.getMessage(), null, false);
+                }
+
+            }
             String normalizedRole = normalizeRole(user.getRole());
             String token = jwtUtil.generateToken(user.getEmail(), normalizedRole);
 

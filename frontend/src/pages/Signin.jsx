@@ -1,10 +1,333 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff,X} from "lucide-react";
 import { toast } from "react-toastify";
 import { useAppStore } from "../app/store";
 import { buildGoogleOAuthUrl, login } from "../lib/authApi";
+import { SC_THEME } from "../lib/theme";
 
+const AUTH_THEME = SC_THEME;
+const CATEGORIES = [
+  "Plumbing", "Electrical", "HVAC",
+  "Carpentry", "Painting", "Cleaning", "Roofing"
+];
+const CITIES = [
+  "Ahmedabad", "Gandhinagar", "Surat",
+  "Baroda", "Bharuch", "Valsad"
+];
+function GoogleRoleModal({ onClose, onConfirm }) {
+  const [step, setStep] = useState(1);
+  const [selectedRole, setSelectedRole] = useState("");
+  const [workerData, setWorkerData] = useState({
+    tradeCategory: "",
+    experienceYears: "",
+    serviceArea: "",
+  });
+
+  const handleRoleSelect = (role) => {
+    setSelectedRole(role);
+    if (role === "CUSTOMER") {
+      onConfirm({ role: "CUSTOMER" });
+    } else {
+      setStep(2);
+    }
+  };
+
+  const handleWorkerContinue = () => {
+    if (!workerData.tradeCategory) {
+      toast.error("Please select a trade category!");
+      return;
+    }
+    if (!workerData.experienceYears ||
+      Number(workerData.experienceYears) < 0) {
+      toast.error("Please enter valid experience years!");
+      return;
+    }
+    if (!workerData.serviceArea) {
+      toast.error("Please select your service area!");
+      return;
+    }
+
+    onConfirm({
+      role: "WORKER",
+      tradeCategory: workerData.tradeCategory,
+      experienceYears: Number(workerData.experienceYears),
+      serviceArea: workerData.serviceArea,
+    });
+  };
+
+  return (
+
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 1000,
+      background: "rgba(2,11,11,0.85)",
+      display: "flex", alignItems: "center",
+      justifyContent: "center", padding: 16,
+    }}>
+      <div style={{
+        background: "#0d1a1a",
+        border: "0.5px solid #1a3333",
+        borderRadius: 16, padding: 28,
+        width: "100%", maxWidth: 420,
+        position: "relative",
+      }}>
+        <button
+          onClick={onClose}
+          style={{
+            position: "absolute", top: 16, right: 16,
+            background: "none", border: "none",
+            cursor: "pointer", color: "#8aa8a8",
+            display: "flex", alignItems: "center",
+          }}
+        >
+          <X size={18} />
+        </button>
+        {step === 1 && (
+          <>
+            <h2 style={{
+              color: "#ffffff", fontSize: 18,
+              fontWeight: 800, marginBottom: 6,
+              letterSpacing: "-0.02em",
+            }}>
+              Join as...
+            </h2>
+            <p style={{
+              color: "#8aa8a8", fontSize: 13,
+              marginBottom: 20,
+            }}>
+              How do you want to use ServiceConnect?
+            </p>
+
+            <div style={{ display: "flex", gap: 12 }}>
+              {/* Customer Card */}
+              <button
+                onClick={() => handleRoleSelect("CUSTOMER")}
+                style={{
+                  flex: 1, padding: "20px 12px",
+                  background: "#081212",
+                  border: "1px solid #1a3333",
+                  borderRadius: 12, cursor: "pointer",
+                  transition: "border-color 0.15s",
+                  textAlign: "center",
+                }}
+                onMouseEnter={(e) =>
+                  e.currentTarget.style.borderColor = "#e8c547"
+                }
+                onMouseLeave={(e) =>
+                  e.currentTarget.style.borderColor = "#1a3333"
+                }
+              >
+                <div style={{ fontSize: 32, marginBottom: 8 }}>👤</div>
+                <p style={{
+                  color: "#ffffff", fontSize: 14,
+                  fontWeight: 700, margin: "0 0 4px",
+                }}>
+                  Customer
+                </p>
+                <p style={{
+                  color: "#8aa8a8", fontSize: 11,
+                  margin: 0, lineHeight: 1.4,
+                }}>
+                  I need home services
+                </p>
+              </button>
+
+              <button
+                onClick={() => handleRoleSelect("WORKER")}
+                style={{
+                  flex: 1, padding: "20px 12px",
+                  background: "#081212",
+                  border: "1px solid #1a3333",
+                  borderRadius: 12, cursor: "pointer",
+                  transition: "border-color 0.15s",
+                  textAlign: "center",
+                }}
+                onMouseEnter={(e) =>
+                  e.currentTarget.style.borderColor = "#e8c547"
+                }
+                onMouseLeave={(e) =>
+                  e.currentTarget.style.borderColor = "#1a3333"
+                }
+              >
+                <div style={{ fontSize: 32, marginBottom: 8 }}>🔧</div>
+                <p style={{
+                  color: "#ffffff", fontSize: 14,
+                  fontWeight: 700, margin: "0 0 4px",
+                }}>
+                  Worker
+                </p>
+                <p style={{
+                  color: "#8aa8a8", fontSize: 11,
+                  margin: 0, lineHeight: 1.4,
+                }}>
+                  I provide services
+                </p>
+              </button>
+            </div>
+          </>
+        )}
+
+        {step === 2 && (
+          <>
+            <button
+              onClick={() => setStep(1)}
+              style={{
+                background: "none", border: "none",
+                color: "#8aa8a8", fontSize: 12,
+                cursor: "pointer", padding: 0,
+                marginBottom: 16,
+              }}
+            >
+              ← Back
+            </button>
+
+            <h2 style={{
+              color: "#ffffff", fontSize: 18,
+              fontWeight: 800, marginBottom: 6,
+            }}>
+              Worker Details
+            </h2>
+            <p style={{
+              color: "#8aa8a8", fontSize: 13,
+              marginBottom: 20,
+            }}>
+              Tell us about your skills!
+            </p>
+
+
+            <div style={{ marginBottom: 12 }}>
+              <label style={{
+                color: "#8aa8a8", fontSize: 11,
+                fontWeight: 700, display: "block",
+                marginBottom: 6, textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}>
+                Trade Category *
+              </label>
+              <div style={{ position: "relative" }}>
+                <select
+                  value={workerData.tradeCategory}
+                  onChange={(e) => setWorkerData(
+                    prev => ({ ...prev, tradeCategory: e.target.value })
+                  )}
+                  style={{
+                    width: "100%", height: 44,
+                    background: "#081212",
+                    border: "0.5px solid #1a3333",
+                    borderRadius: 10,
+                    padding: "0 36px 0 14px",
+                    color: workerData.tradeCategory
+                      ? "#ffffff" : "#8aa8a8",
+                    fontSize: 13, cursor: "pointer",
+                    appearance: "none", outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <option value="">Select category</option>
+                  {CATEGORIES.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+                <div style={{
+                  position: "absolute", right: 12,
+                  top: "50%", transform: "translateY(-50%)",
+                  pointerEvents: "none", color: "#8aa8a8",
+                }}>▾</div>
+              </div>
+            </div>
+
+
+            <div style={{ marginBottom: 12 }}>
+              <label style={{
+                color: "#8aa8a8", fontSize: 11,
+                fontWeight: 700, display: "block",
+                marginBottom: 6, textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}>
+                Experience (Years) *
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="50"
+                placeholder="e.g. 3"
+                value={workerData.experienceYears}
+                onChange={(e) => setWorkerData(
+                  prev => ({ ...prev, experienceYears: e.target.value })
+                )}
+                style={{
+                  width: "100%", height: 44,
+                  background: "#081212",
+                  border: "0.5px solid #1a3333",
+                  borderRadius: 10,
+                  padding: "0 14px",
+                  color: "#ffffff", fontSize: 13,
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <label style={{
+                color: "#8aa8a8", fontSize: 11,
+                fontWeight: 700, display: "block",
+                marginBottom: 6, textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}>
+                Service Area *
+              </label>
+              <div style={{ position: "relative" }}>
+                <select
+                  value={workerData.serviceArea}
+                  onChange={(e) => setWorkerData(
+                    prev => ({ ...prev, serviceArea: e.target.value })
+                  )}
+                  style={{
+                    width: "100%", height: 44,
+                    background: "#081212",
+                    border: "0.5px solid #1a3333",
+                    borderRadius: 10,
+                    padding: "0 36px 0 14px",
+                    color: workerData.serviceArea
+                      ? "#ffffff" : "#8aa8a8",
+                    fontSize: 13, cursor: "pointer",
+                    appearance: "none", outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <option value="">Select your city</option>
+                  {CITIES.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+                <div style={{
+                  position: "absolute", right: 12,
+                  top: "50%", transform: "translateY(-50%)",
+                  pointerEvents: "none", color: "#8aa8a8",
+                }}>▾</div>
+              </div>
+            </div>
+
+
+            <button
+              onClick={handleWorkerContinue}
+              style={{
+                width: "100%", height: 46,
+                background: "#e8c547",
+                border: "none", borderRadius: 10,
+                color: "#020b0b", fontSize: 14,
+                fontWeight: 800, cursor: "pointer",
+              }}
+            >
+              Continue with Google →
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 export default function ServiceConnectSignin() {
   const navigate = useNavigate();
   const setAuthSession = useAppStore((state) => state.setAuthSession);
@@ -13,7 +336,6 @@ export default function ServiceConnectSignin() {
   const [statusMessage, setStatusMessage] = useState("");
   const [statusType, setStatusType] = useState("idle");
   const [formData, setFormData] = useState({ email: "", password: "" });
-
   const handleChange = (field) => (e) =>
     setFormData((prev) => ({ ...prev, [field]: e.target.value }));
 
@@ -76,8 +398,10 @@ export default function ServiceConnectSignin() {
     }
     window.location.href = googleUrl;
   };
-
+    
   return (
+
+    <>
     <div
       className="min-h-screen w-full flex items-center justify-center p-4"
       style={{
@@ -91,14 +415,15 @@ export default function ServiceConnectSignin() {
         className="relative flex w-full overflow-hidden rounded-2xl"
         style={{
           maxWidth: "780px",
-          backgroundColor: "#111f1f",
+          backgroundColor: AUTH_THEME.surface,
+          border: `1px solid ${AUTH_THEME.border}`,
           boxShadow: "0 32px 80px rgba(0,0,0,0.6)",
         }}
       >
         {/* ── LEFT PANEL ── */}
         <div
           className="hidden lg:flex flex-col justify-between p-8 shrink-0"
-          style={{ width: "280px", backgroundColor: "#0d1a1a" }}
+          style={{ width: "280px", backgroundColor: AUTH_THEME.surfaceAlt }}
         >
           {/* Logo */}
           <div>
@@ -142,7 +467,7 @@ export default function ServiceConnectSignin() {
                   <p style={{ fontSize: "12px", fontWeight: 700, color: "#ffffff" }}>
                     ServiceConnect
                   </p>
-                  <p style={{ fontSize: "11px", color: "#6b9090" }}>
+                  <p style={{ fontSize: "11px", color: AUTH_THEME.muted }}>
                     Trusted local services
                   </p>
                 </div>
@@ -151,7 +476,7 @@ export default function ServiceConnectSignin() {
           </div>
 
           {/* Bottom tagline */}
-          <p style={{ fontSize: "11px", color: "#4a7070", lineHeight: 1.6 }}>
+          <p style={{ fontSize: "11px", color: AUTH_THEME.muted, lineHeight: 1.6 }}>
             Connecting homeowners with verified professionals since 2025.
           </p>
         </div>
@@ -185,7 +510,7 @@ export default function ServiceConnectSignin() {
               className="flex items-center"
               style={{
                 background: "#0d1a1a",
-                border: "1px solid rgba(255,255,255,0.08)",
+                border: `1px solid ${AUTH_THEME.border}`,
                 borderRadius: "10px",
                 height: "50px",
                 padding: "0 16px",
@@ -212,7 +537,7 @@ export default function ServiceConnectSignin() {
               className="flex items-center"
               style={{
                 background: "#0d1a1a",
-                border: "1px solid rgba(255,255,255,0.08)",
+                border: `1px solid ${AUTH_THEME.border}`,
                 borderRadius: "10px",
                 height: "50px",
                 padding: "0 16px",
@@ -239,7 +564,7 @@ export default function ServiceConnectSignin() {
                   background: "none",
                   border: "none",
                   cursor: "pointer",
-                  color: "#4a7070",
+                  color: AUTH_THEME.muted,
                   display: "flex",
                   alignItems: "center",
                   padding: 0,
@@ -275,14 +600,13 @@ export default function ServiceConnectSignin() {
                   borderRadius: "8px",
                   background:
                     statusType === "success"
-                      ? "rgba(20,180,100,0.12)"
+                      ? AUTH_THEME.successBg
                       : "rgba(220,60,60,0.12)",
-                  color: statusType === "success" ? "#4ade80" : "#f87171",
-                  border: `1px solid ${
-                    statusType === "success"
-                      ? "rgba(74,222,128,0.25)"
-                      : "rgba(248,113,113,0.25)"
-                  }`,
+                  color: statusType === "success" ? AUTH_THEME.successText : "#f87171",
+                  border: `1px solid ${statusType === "success"
+                    ? AUTH_THEME.successBorder
+                    : "rgba(248,113,113,0.25)"
+                    }`,
                 }}
               >
                 {statusMessage}
@@ -291,18 +615,18 @@ export default function ServiceConnectSignin() {
 
             {/* Divider */}
             <div className="flex items-center gap-3 my-1">
-              <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.07)" }} />
+              <div style={{ flex: 1, height: "1px", background: AUTH_THEME.border }} />
               <span
                 style={{
                   fontSize: "11px",
-                  color: "#3a6060",
+                  color: AUTH_THEME.muted,
                   fontWeight: 600,
                   letterSpacing: "0.08em",
                 }}
               >
                 Or
               </span>
-              <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.07)" }} />
+              <div style={{ flex: 1, height: "1px", background: AUTH_THEME.border }} />
             </div>
 
             {/* Google button */}
@@ -317,7 +641,7 @@ export default function ServiceConnectSignin() {
                 height: "50px",
                 width: "100%",
                 background: "#0d1a1a",
-                border: "1px solid rgba(255,255,255,0.08)",
+                border: `1px solid ${AUTH_THEME.border}`,
                 borderRadius: "10px",
                 color: "#b0c8c8",
                 fontSize: "13px",
@@ -326,10 +650,10 @@ export default function ServiceConnectSignin() {
                 transition: "border-color 0.15s",
               }}
               onMouseEnter={(e) =>
-                (e.currentTarget.style.borderColor = "rgba(232,197,71,0.3)")
+                (e.currentTarget.style.borderColor = AUTH_THEME.accent)
               }
               onMouseLeave={(e) =>
-                (e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)")
+                (e.currentTarget.style.borderColor = AUTH_THEME.border)
               }
             >
               <svg width="18" height="18" viewBox="0 0 24 24">
@@ -374,7 +698,7 @@ export default function ServiceConnectSignin() {
               style={{
                 textAlign: "center",
                 fontSize: "12px",
-                color: "#4a7070",
+                color: AUTH_THEME.muted,
                 marginTop: "6px",
               }}
             >
@@ -390,5 +714,6 @@ export default function ServiceConnectSignin() {
         </div>
       </div>
     </div>
+    </>
   );
 }

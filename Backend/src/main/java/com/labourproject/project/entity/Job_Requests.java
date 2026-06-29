@@ -13,11 +13,11 @@ public class Job_Requests {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
-    private User customer; 
+    private User customer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "worker_id", nullable = true)
-    private Worker worker; 
+    private Worker worker;
 
     @Column(name = "problem_description")
     private String problemDescription;
@@ -37,7 +37,6 @@ public class Job_Requests {
     @Column(name = "customer_longitude")
     private Double customerLongitude;
 
-    
     @Column(name = "status")
     private String status;
 
@@ -50,11 +49,18 @@ public class Job_Requests {
     @Column(name = "budget_amount")
     private double budgetAmount;
 
+    @Column(name = "before_image_url")
+    private String beforeImageUrl;
+
+    @Column(name = "after_image_url")
+    private String afterImageUrl;
+
     public Job_Requests() {
 
     }
 
-    public Job_Requests(String status, String category, String problemDescription, int id, User customer, Worker worker, double budgetAmount, String customerLocation, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Job_Requests(String status, String category, String problemDescription, int id, User customer, Worker worker,
+            double budgetAmount, String customerLocation, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.status = status;
         this.category = category;
         this.problemDescription = problemDescription;
@@ -65,9 +71,10 @@ public class Job_Requests {
         this.customerLocation = customerLocation;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.beforeImageUrl = beforeImageUrl;
+        this.afterImageUrl = afterImageUrl;
     }
 
-  
     public User getCustomer() {
         return customer;
     }
@@ -163,10 +170,48 @@ public class Job_Requests {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
+
     public double getBudgetAmount() {
         return budgetAmount;
     }
+
     public void setBudgetAmount(double budgetAmount) {
         this.budgetAmount = budgetAmount;
+    }
+
+    public String getBeforeImageUrl() {
+        return beforeImageUrl;
+    }
+
+    public void setBeforeImageUrl(String beforeImageUrl) {
+        this.beforeImageUrl = beforeImageUrl;
+    }
+
+    public String getAfterImageUrl() {
+        return afterImageUrl;
+    }
+
+    public void setAfterImageUrl(String afterImageUrl) {
+        this.afterImageUrl = afterImageUrl;
+    }
+    @Override
+    public String toString() {
+        return "Job_Requests{" +
+                "id=" + id +
+                ", customer=" + customer +
+                ", worker=" + worker +
+                ", problemDescription='" + problemDescription + '\'' +
+                ", category='" + category + '\'' +
+                ", customerLocation='" + customerLocation + '\'' +
+                ", customerCity='" + customerCity + '\'' +
+                ", customerLatitude=" + customerLatitude +
+                ", customerLongitude=" + customerLongitude +
+                ", status='" + status + '\'' +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", budgetAmount=" + budgetAmount +
+                ", beforeImageUrl='" + beforeImageUrl + '\'' +
+                ", afterImageUrl='" + afterImageUrl + '\'' +
+                '}';
     }
 }

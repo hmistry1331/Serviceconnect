@@ -33,6 +33,10 @@ public class User {
 
     @Column(name="is_suspended", nullable = false)
     private boolean isSuspended = false;
+
+    @Column(name="profile_image_url")
+    private String profileImageUrl;
+
     public User() {
 
     }
@@ -107,6 +111,12 @@ public class User {
     public void setSuspended(boolean isSuspended) {
         this.isSuspended = isSuspended;
     }
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+    public void setProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
+    }
     @Override
     public String toString() {
         return "User{" +
@@ -117,6 +127,7 @@ public class User {
                 ", role='" + role + '\'' +
                 ", phone='" + phone + '\'' +
                 ", isSuspended=" + isSuspended +
+                ", profileImageUrl='" + profileImageUrl + '\'' +
                 '}';
     }
 }

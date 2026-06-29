@@ -8,18 +8,33 @@ import {
 } from "lucide-react";
 import { createJobRequest } from "@/lib/api";
 import { GUJARAT_CITIES, getCityByValue, getNearestSupportedCity } from "@/lib/gujaratCities";
+import { SC_THEME } from "@/lib/theme";
 
 const MAX_CITY_DEVIATION_KM = 80;
 
+const CREATE_JOB_THEME = {
+  ...SC_THEME,
+  panel: SC_THEME.surfaceAlt,
+  mutedSoft: "#5a8080",
+  mutedDeep: "#3a6060",
+  mutedLink: "#4a7070",
+  neutral: "#b0c8c8",
+  placeholder: "#2a4040",
+  accentHover: "#d4b33e",
+  danger: "#f87171",
+  dangerSoft: "#fca5a5",
+  buttonText: "#0d1a1a",
+};
+
 /* ─── 7 service categories (matches backend ServiceCategory enum) ─── */
 const CATEGORIES = [
-  { value: "PLUMBING",   label: "Plumbing",   icon: Wrench,     desc: "Leaks, pipes & fixtures"        },
-  { value: "ELECTRICAL", label: "Electrical", icon: Zap,        desc: "Wiring, panels & lighting"      },
-  { value: "HVAC",       label: "HVAC",       icon: Wind,       desc: "AC, heating & ventilation"      },
-  { value: "CARPENTRY",  label: "Carpentry",  icon: Hammer,     desc: "Cabinets, doors & wood"         },
-  { value: "PAINTING",   label: "Painting",   icon: Paintbrush, desc: "Interior & exterior walls"      },
-  { value: "CLEANING",   label: "Cleaning",   icon: SprayCan,   desc: "Deep clean & post-construction" },
-  { value: "ROOFING",    label: "Roofing",    icon: HomeIcon,   desc: "Tiles, leaks & roof repair"     },
+  { value: "PLUMBING", label: "Plumbing", icon: Wrench, desc: "Leaks, pipes & fixtures" },
+  { value: "ELECTRICAL", label: "Electrical", icon: Zap, desc: "Wiring, panels & lighting" },
+  { value: "HVAC", label: "HVAC", icon: Wind, desc: "AC, heating & ventilation" },
+  { value: "CARPENTRY", label: "Carpentry", icon: Hammer, desc: "Cabinets, doors & wood" },
+  { value: "PAINTING", label: "Painting", icon: Paintbrush, desc: "Interior & exterior walls" },
+  { value: "CLEANING", label: "Cleaning", icon: SprayCan, desc: "Deep clean & post-construction" },
+  { value: "ROOFING", label: "Roofing", icon: HomeIcon, desc: "Tiles, leaks & roof repair" },
 ];
 
 /* ─── Validation helpers ─── */
@@ -38,15 +53,15 @@ export default function CreateJobRequest() {
   const navigate = useNavigate();
 
   const [fields, setFields] = useState({
-    category:     "",
-    description:  "",
-    location:     "",
+    category: "",
+    description: "",
+    location: "",
     budgetAmount: "",
   });
-  const [errors,    setErrors]    = useState({});
-  const [touched,   setTouched]   = useState({});
-  const [status,    setStatus]    = useState("idle"); // idle | loading | success | error
-  const [apiError,  setApiError]  = useState("");
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+  const [status, setStatus] = useState("idle"); // idle | loading | success | error
+  const [apiError, setApiError] = useState("");
   const [geoCoords, setGeoCoords] = useState(null);
   const [geoStatus, setGeoStatus] = useState({ loading: false, message: "", type: "idle" });
 
@@ -148,17 +163,17 @@ export default function CreateJobRequest() {
       };
 
       await createJobRequest({
-        category:     selectedCat?.label || "",
-        description:  fields.description.trim(),
-        location:     selectedCity.value,
-        city:         selectedCity.value,
-        latitude:     preciseCoordinates.latitude,
-        longitude:    preciseCoordinates.longitude,
+        category: selectedCat?.label || "",
+        description: fields.description.trim(),
+        location: selectedCity.value,
+        city: selectedCity.value,
+        latitude: preciseCoordinates.latitude,
+        longitude: preciseCoordinates.longitude,
         budgetAmount: Number(fields.budgetAmount),
         /* backend sets: customerId, status=PENDING, createdAt */
       });
       setStatus("success");
-      setTimeout(() => navigate("/"), 2200);
+      setTimeout(() => navigate("/dashboard"), 2200);
     } catch (err) {
       setStatus("error");
       setApiError(err.message || "Something went wrong. Please try again.");
@@ -170,21 +185,21 @@ export default function CreateJobRequest() {
   ───────────────────────────────────── */
   if (status === "success") {
     return (
-      <div style={{ minHeight:"100vh", backgroundColor:"#020b0b", display:"flex", alignItems:"center", justifyContent:"center", padding:"24px", fontFamily:"'DM Sans', sans-serif" }}>
+      <div style={{ minHeight: "100vh", backgroundColor: CREATE_JOB_THEME.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px", fontFamily: "'DM Sans', sans-serif" }}>
         <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Cormorant+Garamond:wght@600;700&display=swap');
           @keyframes scaleIn { from{opacity:0;transform:scale(0.85)} to{opacity:1;transform:scale(1)} }`}
         </style>
-        <div style={{ textAlign:"center", animation:"scaleIn 0.5s cubic-bezier(0.22,1,0.36,1) both" }}>
-          <div style={{ width:72, height:72, borderRadius:"50%", background:"rgba(29,158,117,0.12)", border:"2px solid rgba(29,158,117,0.35)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 20px" }}>
-            <CheckCircle2 size={32} color="#1D9E75" />
+        <div style={{ textAlign: "center", animation: "scaleIn 0.5s cubic-bezier(0.22,1,0.36,1) both" }}>
+          <div style={{ width: 72, height: 72, borderRadius: "50%", background: CREATE_JOB_THEME.successBg, border: `2px solid ${CREATE_JOB_THEME.successBorder}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+            <CheckCircle2 size={32} color={CREATE_JOB_THEME.successText} />
           </div>
-          <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:700, color:"#fff", letterSpacing:"-0.02em", marginBottom:10 }}>
+          <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 32, fontWeight: 700, color: CREATE_JOB_THEME.text, letterSpacing: "-0.02em", marginBottom: 10 }}>
             Job posted!
           </h2>
-          <p style={{ fontSize:14, color:"#5a8080", marginBottom:6 }}>
+          <p style={{ fontSize: 14, color: CREATE_JOB_THEME.mutedSoft, marginBottom: 6 }}>
             Your request has been submitted. Nearby professionals will be notified.
           </p>
-          <p style={{ fontSize:12, color:"#3a6060" }}>Redirecting to home…</p>
+          <p style={{ fontSize: 12, color: CREATE_JOB_THEME.mutedDeep }}>Redirecting to dashboard…</p>
         </div>
       </div>
     );
@@ -195,35 +210,35 @@ export default function CreateJobRequest() {
   ───────────────────────────────────── */
   return (
     <div
-      style={{ minHeight:"100vh", backgroundColor:"#020b0b", color:"#fff", fontFamily:"'DM Sans', sans-serif", padding:"32px 16px 64px" }}
+      style={{ minHeight: "100vh", backgroundColor: CREATE_JOB_THEME.bg, color: CREATE_JOB_THEME.text, fontFamily: "'DM Sans', sans-serif", padding: "32px 16px 64px" }}
     >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Cormorant+Garamond:wght@600;700&display=swap');
 
         .field-input {
-          width: 100%; background: #0a1818;
-          border: 1px solid rgba(255,255,255,0.09);
-          border-radius: 12px; color: #ffffff;
+          width: 100%; background: ${CREATE_JOB_THEME.panel};
+          border: 1px solid ${CREATE_JOB_THEME.border};
+          border-radius: 12px; color: ${CREATE_JOB_THEME.text};
           font-family: 'DM Sans', sans-serif;
           font-size: 14px;
           transition: border-color 0.18s, box-shadow 0.18s;
         }
         .field-input:focus {
           outline: none;
-          border-color: rgba(232,197,71,0.45);
+          border-color: ${CREATE_JOB_THEME.accent};
           box-shadow: 0 0 0 3px rgba(232,197,71,0.08);
         }
         .field-input.error {
           border-color: rgba(248,113,113,0.5);
           box-shadow: 0 0 0 3px rgba(248,113,113,0.07);
         }
-        .field-input::placeholder { color: #2a4040; }
+        .field-input::placeholder { color: ${CREATE_JOB_THEME.placeholder}; }
 
         .cat-pill {
           display: flex; align-items: center; gap: 10px;
           padding: 12px 16px; border-radius: 12px; cursor: pointer;
-          border: 1px solid rgba(255,255,255,0.07);
-          background: #0a1818;
+          border: 1px solid ${CREATE_JOB_THEME.border};
+          background: ${CREATE_JOB_THEME.panel};
           transition: border-color 0.18s, background 0.18s, transform 0.12s;
           user-select: none;
         }
@@ -238,7 +253,7 @@ export default function CreateJobRequest() {
         .submit-btn {
           transition: background 0.15s, transform 0.1s, opacity 0.15s;
         }
-        .submit-btn:hover:not(:disabled) { background: #d4b33e !important; }
+        .submit-btn:hover:not(:disabled) { background: ${CREATE_JOB_THEME.accentHover} !important; }
         .submit-btn:active:not(:disabled) { transform: scale(0.99); }
         .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
@@ -251,22 +266,22 @@ export default function CreateJobRequest() {
         {/* ── Back link ── */}
         <Link
           to="/"
-          style={{ display:"inline-flex", alignItems:"center", gap:6, textDecoration:"none", color:"#4a7070", fontSize:13, fontWeight:600, marginBottom:32, transition:"color 0.15s" }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "#e8c547")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "#4a7070")}
+          style={{ display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none", color: CREATE_JOB_THEME.mutedLink, fontSize: 13, fontWeight: 600, marginBottom: 32, transition: "color 0.15s" }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = CREATE_JOB_THEME.accent)}
+          onMouseLeave={(e) => (e.currentTarget.style.color = CREATE_JOB_THEME.mutedLink)}
         >
           <ArrowLeft size={14} /> Back to home
         </Link>
 
         {/* ── Page header ── */}
         <div className="fade-up" style={{ marginBottom: 36 }}>
-          <p style={{ fontSize:11, fontWeight:700, letterSpacing:"0.16em", textTransform:"uppercase", color:"#e8c547", marginBottom:8 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: CREATE_JOB_THEME.accent, marginBottom: 8 }}>
             New request
           </p>
-          <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:"clamp(28px,4vw,42px)", fontWeight:700, color:"#fff", letterSpacing:"-0.02em", lineHeight:1.1, marginBottom:10 }}>
+          <h1 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(28px,4vw,42px)", fontWeight: 700, color: CREATE_JOB_THEME.text, letterSpacing: "-0.02em", lineHeight: 1.1, marginBottom: 10 }}>
             Post a Job Request
           </h1>
-          <p style={{ fontSize:14, color:"#5a8080", lineHeight:1.65 }}>
+          <p style={{ fontSize: 14, color: CREATE_JOB_THEME.mutedSoft, lineHeight: 1.65 }}>
             Describe your problem and our AI will match you with a verified professional near you.
           </p>
         </div>
@@ -276,13 +291,13 @@ export default function CreateJobRequest() {
           onSubmit={handleSubmit}
           noValidate
           className="fade-up"
-          style={{ animationDelay:"0.07s", display:"flex", flexDirection:"column", gap:28 }}
+          style={{ animationDelay: "0.07s", display: "flex", flexDirection: "column", gap: 28 }}
         >
 
           {/* ══ STEP 1: Category ══ */}
           <section>
             <FieldLabel icon={<Sparkles size={13} />} label="Service category" />
-            <p style={{ fontSize:12, color:"#3a6060", marginBottom:14 }}>
+            <p style={{ fontSize: 12, color: CREATE_JOB_THEME.mutedDeep, marginBottom: 14 }}>
               Optional: pick a category if you know it. Otherwise leave it blank and AI will detect the best match from your description.
             </p>
 
@@ -303,19 +318,19 @@ export default function CreateJobRequest() {
                       className={`cat-pill${fields.category === category.value ? " selected" : ""}`}
                       onClick={() => { setFields((p) => ({ ...p, category: category.value })); setErrors((p) => ({ ...p, category: undefined })); }}
                     >
-                      <div style={{ width:32, height:32, borderRadius:9, background: fields.category === category.value ? "rgba(232,197,71,0.15)" : "rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.18s" }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 9, background: fields.category === category.value ? "rgba(232,197,71,0.15)" : CREATE_JOB_THEME.accentSoft, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.18s" }}>
                         <Icon
                           size={15}
-                          color={fields.category === category.value ? "#e8c547" : "#4a7070"}
+                          color={fields.category === category.value ? CREATE_JOB_THEME.accent : CREATE_JOB_THEME.mutedLink}
                           strokeWidth={1.8}
                         />
                       </div>
-                      <div style={{ textAlign:"left", minWidth:0 }}>
-                        <p style={{ fontSize:13, fontWeight:700, color: fields.category === category.value ? "#e8c547" : "#b0c8c8", marginBottom:2 }}>{category.label}</p>
-                        <p style={{ fontSize:11, color:"#3a6060", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{category.desc}</p>
+                      <div style={{ textAlign: "left", minWidth: 0 }}>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: fields.category === category.value ? CREATE_JOB_THEME.accent : CREATE_JOB_THEME.neutral, marginBottom: 2 }}>{category.label}</p>
+                        <p style={{ fontSize: 11, color: CREATE_JOB_THEME.mutedDeep, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{category.desc}</p>
                       </div>
                       {fields.category === category.value && (
-                        <CheckCircle2 size={14} color="#e8c547" style={{ marginLeft:"auto", flexShrink:0 }} />
+                        <CheckCircle2 size={14} color={CREATE_JOB_THEME.accent} style={{ marginLeft: "auto", flexShrink: 0 }} />
                       )}
                     </button>
                   );
@@ -328,7 +343,7 @@ export default function CreateJobRequest() {
           {/* ══ STEP 2: Description ══ */}
           <section>
             <FieldLabel icon={<FileText size={13} />} label="Problem description" required />
-            <div style={{ position:"relative" }}>
+            <div style={{ position: "relative" }}>
               <textarea
                 className={`field-input${touched.description && errors.description ? " error" : ""}`}
                 placeholder="e.g. My bathroom pipe burst under the sink — water is leaking and the cabinet is wet. I need someone to replace the pipe section and check the fittings."
@@ -336,12 +351,12 @@ export default function CreateJobRequest() {
                 onChange={set("description")}
                 onBlur={touch("description")}
                 rows={5}
-                style={{ padding:"14px 16px", resize:"vertical", minHeight:120 }}
+                style={{ padding: "14px 16px", resize: "vertical", minHeight: 120 }}
               />
               <CharCount current={fields.description.length} min={10} />
             </div>
             {touched.description && errors.description && <ErrorMsg msg={errors.description} />}
-            <p style={{ fontSize:11, color:"#3a6060", marginTop:6 }}>
+            <p style={{ fontSize: 11, color: CREATE_JOB_THEME.mutedDeep, marginTop: 6 }}>
               Be specific — the more detail you give, the better your match will be.
             </p>
           </section>
@@ -351,10 +366,19 @@ export default function CreateJobRequest() {
             <FieldLabel icon={<MapPin size={13} />} label="Your location" required />
             <select
               className={`field-input${touched.location && errors.location ? " error" : ""}`}
+
               value={fields.location}
               onChange={set("location")}
               onBlur={touch("location")}
-              style={{ height:50, padding:"0 16px" }}
+              style={{
+                height: 50,
+                padding: "0 16px",
+                appearance: "none",      
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238aa8a8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "right 16px center",
+                cursor: "pointer",
+              }}
             >
               <option value="">Select Gujarat city</option>
               {GUJARAT_CITIES.map((city) => (
@@ -370,10 +394,10 @@ export default function CreateJobRequest() {
               disabled={geoStatus.loading}
               style={{
                 marginTop: 10,
-                background: "#0a1818",
+                background: CREATE_JOB_THEME.panel,
                 border: "1px solid rgba(232,197,71,0.25)",
                 borderRadius: 10,
-                color: "#e8c547",
+                color: CREATE_JOB_THEME.accent,
                 fontSize: 12,
                 fontWeight: 700,
                 padding: "8px 12px",
@@ -387,13 +411,13 @@ export default function CreateJobRequest() {
                 style={{
                   fontSize: 11,
                   marginTop: 8,
-                  color: geoStatus.type === "error" ? "#f87171" : geoStatus.type === "success" ? "#1D9E75" : "#5a8080",
+                  color: geoStatus.type === "error" ? CREATE_JOB_THEME.danger : geoStatus.type === "success" ? CREATE_JOB_THEME.successText : CREATE_JOB_THEME.mutedSoft,
                 }}
               >
                 {geoStatus.message}
               </p>
             )}
-            <p style={{ fontSize:11, color:"#3a6060", marginTop:6 }}>
+            <p style={{ fontSize: 11, color: CREATE_JOB_THEME.mutedDeep, marginTop: 6 }}>
               Nearby matching uses a 10 km radius from your exact coordinates.
             </p>
           </section>
@@ -401,8 +425,8 @@ export default function CreateJobRequest() {
           {/* ══ STEP 4: Budget ══ */}
           <section>
             <FieldLabel icon={<IndianRupee size={13} />} label="Your budget" required />
-            <div style={{ position:"relative" }}>
-              <div style={{ position:"absolute", left:14, top:"50%", transform:"translateY(-50%)", color:"#4a7070", fontSize:14, fontWeight:600, pointerEvents:"none" }}>₹</div>
+            <div style={{ position: "relative" }}>
+              <div style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: CREATE_JOB_THEME.mutedLink, fontSize: 14, fontWeight: 600, pointerEvents: "none" }}>₹</div>
               <input
                 type="number"
                 min="1"
@@ -411,11 +435,11 @@ export default function CreateJobRequest() {
                 value={fields.budgetAmount}
                 onChange={set("budgetAmount")}
                 onBlur={touch("budgetAmount")}
-                style={{ height:50, padding:"0 16px 0 30px" }}
+                style={{ height: 50, padding: "0 16px 0 30px" }}
               />
             </div>
             {touched.budgetAmount && errors.budgetAmount && <ErrorMsg msg={errors.budgetAmount} />}
-            <p style={{ fontSize:11, color:"#3a6060", marginTop:6 }}>
+            <p style={{ fontSize: 11, color: CREATE_JOB_THEME.mutedDeep, marginTop: 6 }}>
               Workers will see this and quote accordingly. You can negotiate before accepting.
             </p>
           </section>
@@ -424,42 +448,42 @@ export default function CreateJobRequest() {
           {fields.description.length >= 10 && fields.location && Number(fields.budgetAmount) > 0 && (
             <div
               style={{
-                background:"#0a1818", border:"1px solid rgba(232,197,71,0.18)",
-                borderRadius:14, padding:"18px 20px",
-                animation:"fadeUp 0.3s cubic-bezier(0.22,1,0.36,1) both",
+                background: CREATE_JOB_THEME.panel, border: `1px solid ${CREATE_JOB_THEME.border}`,
+                borderRadius: 14, padding: "18px 20px",
+                animation: "fadeUp 0.3s cubic-bezier(0.22,1,0.36,1) both",
               }}
             >
-              <p style={{ fontSize:11, color:"#e8c547", fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:14 }}>
+              <p style={{ fontSize: 11, color: CREATE_JOB_THEME.accent, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 14 }}>
                 Request preview
               </p>
-              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-                <PreviewRow label="Category"    value={selectedCat?.label || "Auto-detect with AI"} />
-                <PreviewRow label="City"        value={fields.location} />
-                <PreviewRow label="GPS mode"    value={geoCoords ? "Precise" : "City center"} valueColor={geoCoords ? "#1D9E75" : "#b0c8c8"} />
-                <PreviewRow label="Budget"      value={`₹${Number(fields.budgetAmount).toLocaleString("en-IN")}`} />
-                <PreviewRow label="Status"      value="PENDING" valueColor="#e8c547" />
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <PreviewRow label="Category" value={selectedCat?.label || "Auto-detect with AI"} />
+                <PreviewRow label="City" value={fields.location} />
+                <PreviewRow label="GPS mode" value={geoCoords ? "Precise" : "City center"} valueColor={geoCoords ? CREATE_JOB_THEME.successText : CREATE_JOB_THEME.neutral} />
+                <PreviewRow label="Budget" value={`₹${Number(fields.budgetAmount).toLocaleString("en-IN")}`} />
+                <PreviewRow label="Status" value="PENDING" valueColor={CREATE_JOB_THEME.accent} />
               </div>
             </div>
           )}
 
           {/* ══ API error ══ */}
           {status === "error" && (
-            <div style={{ display:"flex", alignItems:"flex-start", gap:10, background:"rgba(248,113,113,0.08)", border:"1px solid rgba(248,113,113,0.25)", borderRadius:12, padding:"14px 16px" }}>
-              <AlertCircle size={16} color="#f87171" style={{ flexShrink:0, marginTop:1 }} />
-              <p style={{ fontSize:13, color:"#fca5a5", lineHeight:1.5 }}>{apiError}</p>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 10, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.25)", borderRadius: 12, padding: "14px 16px" }}>
+              <AlertCircle size={16} color={CREATE_JOB_THEME.danger} style={{ flexShrink: 0, marginTop: 1 }} />
+              <p style={{ fontSize: 13, color: CREATE_JOB_THEME.dangerSoft, lineHeight: 1.5 }}>{apiError}</p>
             </div>
           )}
 
           {/* ══ Submit ══ */}
-          <div style={{ display:"flex", flexDirection:"column", gap:12, paddingTop:4 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, paddingTop: 4 }}>
             <button
               type="submit"
               disabled={status === "loading"}
               className="submit-btn"
               style={{
                 height: 54, width: "100%",
-                background: "#e8c547", border: "none",
-                borderRadius: 13, color: "#0d1a1a",
+                background: CREATE_JOB_THEME.accent, border: "none",
+                borderRadius: 13, color: CREATE_JOB_THEME.buttonText,
                 fontSize: 15, fontWeight: 800,
                 cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
@@ -467,15 +491,15 @@ export default function CreateJobRequest() {
               }}
             >
               {status === "loading" ? (
-                <><Loader2 size={18} style={{ animation:"spin 0.8s linear infinite" }} /> Submitting…</>
+                <><Loader2 size={18} style={{ animation: "spin 0.8s linear infinite" }} /> Submitting…</>
               ) : (
                 <>Post Job Request <ChevronRight size={17} strokeWidth={2.5} /></>
               )}
             </button>
 
-            <p style={{ textAlign:"center", fontSize:12, color:"#2a4040", lineHeight:1.6 }}>
+            <p style={{ textAlign: "center", fontSize: 12, color: CREATE_JOB_THEME.placeholder, lineHeight: 1.6 }}>
               By posting, you agree to our{" "}
-              <a href="#" style={{ color:"#4a7070", textDecoration:"none" }}>Terms of Service</a>.
+              <a href="#" style={{ color: CREATE_JOB_THEME.mutedLink, textDecoration: "none" }}>Terms of Service</a>.
               Your customer ID and timestamp are set automatically.
             </p>
           </div>
@@ -491,19 +515,19 @@ export default function CreateJobRequest() {
 
 function FieldLabel({ icon, label, required }) {
   return (
-    <label style={{ display:"flex", alignItems:"center", gap:7, fontSize:13, fontWeight:700, color:"#b0c8c8", marginBottom:10 }}>
-      <span style={{ color:"#e8c547" }}>{icon}</span>
+    <label style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 700, color: CREATE_JOB_THEME.neutral, marginBottom: 10 }}>
+      <span style={{ color: CREATE_JOB_THEME.accent }}>{icon}</span>
       {label}
-      {required && <span style={{ color:"rgba(248,113,113,0.7)", fontSize:12 }}>*</span>}
+      {required && <span style={{ color: "rgba(248,113,113,0.7)", fontSize: 12 }}>*</span>}
     </label>
   );
 }
 
 function ErrorMsg({ msg }) {
   return (
-    <div style={{ display:"flex", alignItems:"center", gap:6, marginTop:7 }}>
-      <AlertCircle size={12} color="#f87171" />
-      <p style={{ fontSize:12, color:"#f87171", fontWeight:500 }}>{msg}</p>
+    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 7 }}>
+      <AlertCircle size={12} color={CREATE_JOB_THEME.danger} />
+      <p style={{ fontSize: 12, color: CREATE_JOB_THEME.danger, fontWeight: 500 }}>{msg}</p>
     </div>
   );
 }
@@ -511,17 +535,17 @@ function ErrorMsg({ msg }) {
 function CharCount({ current, min }) {
   const done = current >= min;
   return (
-    <span style={{ position:"absolute", bottom:10, right:12, fontSize:11, color: done ? "#1D9E75" : "#3a6060", fontWeight:600, pointerEvents:"none" }}>
+    <span style={{ position: "absolute", bottom: 10, right: 12, fontSize: 11, color: done ? CREATE_JOB_THEME.successText : CREATE_JOB_THEME.mutedDeep, fontWeight: 600, pointerEvents: "none" }}>
       {current} {!done && `/ ${min} min`}
     </span>
   );
 }
 
-function PreviewRow({ label, value, valueColor = "#b0c8c8" }) {
+function PreviewRow({ label, value, valueColor = CREATE_JOB_THEME.neutral }) {
   return (
-    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", fontSize:13 }}>
-      <span style={{ color:"#3a6060", fontWeight:500 }}>{label}</span>
-      <span style={{ color: valueColor, fontWeight:600 }}>{value}</span>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13 }}>
+      <span style={{ color: CREATE_JOB_THEME.mutedDeep, fontWeight: 500 }}>{label}</span>
+      <span style={{ color: valueColor, fontWeight: 600 }}>{value}</span>
     </div>
   );
 }

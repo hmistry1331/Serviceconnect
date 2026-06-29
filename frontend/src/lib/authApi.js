@@ -1,25 +1,4 @@
-function getApiBaseUrl() {
-  return (
-    import.meta.env.VITE_API_URL ||
-    import.meta.env.VITE_API_BASE_URL ||
-    "http://localhost:8080"
-  );
-}
-
-async function parseResponse(response) {
-  const responseText = await response.text();
-
-  if (!responseText) {
-    return {};
-  }
-
-  try {
-    return JSON.parse(responseText);
-  } catch {
-    return { message: responseText };
-  }
-}
-
+import { getApiBaseUrl, parseResponse } from "./utils";
 async function postJson(path, payload) {
   const response = await fetch(`${getApiBaseUrl()}${path}`, {
     method: "POST",

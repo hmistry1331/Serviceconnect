@@ -364,7 +364,7 @@ function WorkersSection({ toast }) {
     setActing(id);
     try {
       await api.put(`/api/admin/workers/verify/${id}`);
-      setWorkers((p) => p.map((w) => w.workerId === id ? { ...w, verificationStatus: "VERIFIED" } : w));
+      setWorkers((p) => p.map((w) => w.id  === id ? { ...w, verificationStatus: "VERIFIED" } : w));
       toast("Worker approved and verified.");
     } catch { toast("Failed to verify worker.", "error"); }
     finally { setActing(null); }
@@ -372,12 +372,12 @@ function WorkersSection({ toast }) {
 
   const reject = async () => {
     if (!reason.trim()) return;
-    const id = rejectModal.workerId;
+    const id = rejectModal.id;
     setActing(id);
     setRejectModal(null);
     try {
       await api.put(`/api/admin/workers/reject/${id}`, { reason: reason.trim() });
-      setWorkers((p) => p.map((w) => w.workerId === id ? { ...w, verificationStatus: "REJECTED" } : w));
+      setWorkers((p) => p.map((w) => w.id === id ? { ...w, verificationStatus: "REJECTED" } : w));
       toast("Worker rejected.");
       setReason("");
     } catch { toast("Failed to reject worker.", "error"); }
@@ -419,8 +419,8 @@ function WorkersSection({ toast }) {
                 {workers.map((w, i) => {
                   const Icon = CAT_ICON[(w.tradeCategory || "").toUpperCase()] || Wrench;
                   return (
-                    <tr key={w.workerId} style={{ background: i%2===0 ? "transparent" : "rgba(255,255,255,0.01)" }}>
-                      <TD style={{ color:"#3a6060", fontFamily:"var(--font-mono)", fontSize:11 }}>#{w.workerId}</TD>
+                    <tr key={w.id} style={{ background: i%2===0 ? "transparent" : "rgba(255,255,255,0.01)" }}>
+                      <TD style={{ color:"#3a6060", fontFamily:"var(--font-mono)", fontSize:11 }}>#{w.id}</TD>
                       <TD style={{ color:"#3a6060", fontFamily:"var(--font-mono)", fontSize:11 }}>#{w.userId}</TD>
                       <TD><span style={{ fontWeight:600, color:"#e0e8e8" }}>{w.name}</span></TD>
                       <TD style={{ color:"#6a9090" }}>{w.email}</TD>
@@ -438,10 +438,10 @@ function WorkersSection({ toast }) {
                       <TD>
                         {w.verificationStatus === "PENDING" && (
                           <div style={{ display:"flex", gap:6 }}>
-                            <ActionBtn onClick={() => verify(w.workerId)} disabled={acting===w.workerId} color="#1D9E75" border="rgba(29,158,117,0.3)">
-                              {acting===w.workerId ? <Loader2 size={11} style={{animation:"spin 0.8s linear infinite"}}/> : <ShieldCheck size={11}/>} Approve
+                            <ActionBtn onClick={() => verify(w.id)} disabled={acting===w.id} color="#1D9E75" border="rgba(29,158,117,0.3)">
+                              {acting===w.id ? <Loader2 size={11} style={{animation:"spin 0.8s linear infinite"}}/> : <ShieldCheck size={11}/>} Approve
                             </ActionBtn>
-                            <ActionBtn onClick={() => { setRejectModal(w); setReason(""); }} disabled={acting===w.workerId} color="#f87171" border="rgba(248,113,113,0.3)">
+                            <ActionBtn onClick={() => { setRejectModal(w); setReason(""); }} disabled={acting===w.id} color="#f87171" border="rgba(248,113,113,0.3)">
                               <XCircle size={11}/> Reject
                             </ActionBtn>
                           </div>

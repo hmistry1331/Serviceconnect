@@ -30,11 +30,26 @@ export default function GoogleAuthCallback() {
       navigate("/login", { replace: true });
       return;
     }
-
-    loginWithGoogleCode({
+    let pendingRoleData = null;
+    try {
+      const stored = localStorage.getItem("google_pending_role");
+      if (stored) {
+        pendingRoleData = JSON.parse(stored);
+      }
+    } catch {
+      pendingRoleData = null;
+    } finally {
+      localStorage.removeItem("google_pending_role");
+    }
+    const payload = {
       code,
       redirectUri: window.location.origin + "/auth/google/callback",
-    })
+      role: pendingRoleData?.role || "CUSTOMER",
+      tradeCategory: pendingRoleData?.tradeCategory || null,
+      experienceYears: pendingRoleData?.experienceYears || 0,
+      serviceArea: pendingRoleData?.serviceArea || null,
+    };
+    loginWithGoogleCode(payload)
       .then((data) => {
         setAuthSession({ token: data.token, role: data.role });
         toast.success(data.message || "Google login successful!");
@@ -49,8 +64,24 @@ export default function GoogleAuthCallback() {
         }
       })
       .catch((error) => {
-        toast.error(error.message || "Google sign-in failed.");
-        navigate("/login", { replace: true });
+        const message = error.message || "";
+        const isNewUser = message.toLowerCase()
+          .includes("sign up first") ||
+          message.toLowerCase()
+            .includes("no account found");
+
+        if (isNewUser) {
+          toast.info(
+            "No account found! Please sign up first!",
+            { autoClose: 3000 }
+          );
+          setTimeout(() => {
+            navigate("/signup", { replace: true });
+          }, 2000); // ← wait 2 seconds so they see the toast!
+        } else {
+          toast.error(message || "Google sign-in failed.");
+          navigate("/login", { replace: true });
+        }
       });
   }, [navigate, searchParams, setAuthSession]);
 

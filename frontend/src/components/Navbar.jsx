@@ -6,6 +6,7 @@ import { useAppStore } from "../app/store";
 
 const NAV_LINKS = [
   { label: "Home",         to: "/"          },
+  { label: "Dashboard",    to: "/dashboard" },
   { label: "Services",     to: "/#services" },
   { label: "How it works", to: "/#how"      },
   { label: "Worker Feed",  to: "/feed"      },
@@ -27,8 +28,18 @@ export default function Navbar() {
     userRole.includes("WORKER") || userRole.includes("PROFESSIONAL");
   const canSeeCreateRequest =
     userRole.includes("CUSTOMER") || userRole.includes("USER");
+  const canSeeDashboard =
+    isLoggedIn && (
+      userRole.includes("CUSTOMER") ||
+      userRole.includes("USER") ||
+      userRole.includes("WORKER") ||
+      userRole.includes("PROFESSIONAL")
+    );
 
   const navLinks = NAV_LINKS.filter((link) => {
+    if (link.to === "/dashboard") {
+      return canSeeDashboard;
+    }
     if (link.to === "/feed") {
       return canSeeWorkerFeed;
     }

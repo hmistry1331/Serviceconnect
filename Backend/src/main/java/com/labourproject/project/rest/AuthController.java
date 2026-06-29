@@ -43,7 +43,13 @@ public class AuthController {
     @PostMapping("/oauth/google/callback")
     public ResponseEntity<AuthResponse> googleCallback(@RequestBody GoogleAuthRequest request) {
 
-        AuthResponse response = userService.loginWithGoogle(request.getCode(), request.getRedirectUri());
+        AuthResponse response = userService.loginWithGoogle(
+                request.getCode(),
+                request.getRedirectUri(),
+                request.getRole(),
+                request.getTradeCategory(),
+                request.getExperienceYears(),
+                request.getServiceArea());
 
         if (response.isSuccess()) {
             return ResponseEntity.ok(response);

@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import Signup from "./pages/Signup"; // <-- Import your new page!
+import Signup from "./pages/Signup"; 
 import Signin from "./pages/Signin";
 import Home from "./pages/Home";
 import WorkerFeed from "./pages/WorkerFeed";
@@ -9,23 +9,21 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Admin from "./pages/Admin";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import GoogleAuthCallback from "./pages/GoogleAuthCallback";
-
+import Dashboard from "./pages/Dashboard";
+import JobRequestDetail from "./pages/JobRequestDetail";
+import WorkerJobDetail from "./pages/WorkerJobDetail";
+import NotFound from "./pages/Notfound";
+import SubmitReview from "./pages/SubmitReview";
 export default function App() {
   return (
     <Routes>
-      {/* Route 1: Home Page (http://localhost:5173/) */}
       <Route path="/" element={<Home />} />
-
-      {/* Route 2: Your amazing new Signup Page! (http://localhost:5173/signup) */}
       <Route path="/signup" element={<Signup />} />
-
-      {/* Route 3: Signin Page (http://localhost:5173/login) */}
       <Route path="/login" element={<Signin />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
 
-      {/* Route 4: Worker feed (http://localhost:5173/feed) */}
-      <Route
+        <Route
         path="/feed"
         element={
           <ProtectedRoute allowedRoles={["WORKER", "PROFESSIONAL"]}>
@@ -33,7 +31,31 @@ export default function App() {
           </ProtectedRoute>
         }
       />
-
+      <Route
+        path="/job/:jobId"
+        element={
+          <ProtectedRoute allowedRoles={["CUSTOMER", "USER"]}>
+            <JobRequestDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/review/:jobId"
+        element={
+          <ProtectedRoute allowedRoles={["CUSTOMER", "USER"]}>
+            <SubmitReview />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/worker/job/:jobId"
+        element={
+          <ProtectedRoute allowedRoles={["WORKER", "PROFESSIONAL"]}>
+            <WorkerJobDetail />
+          </ProtectedRoute>
+        }
+      />
+      
       <Route
         path="/create-job-request"
         element={
@@ -48,6 +70,42 @@ export default function App() {
         element={
           <ProtectedRoute allowedRoles={["ADMIN"]}>
             <Admin />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["CUSTOMER", "USER", "WORKER", "PROFESSIONAL"]}>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/dashboard/customer"
+        element={
+          <ProtectedRoute allowedRoles={["CUSTOMER", "USER"]}>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/dashboard/worker"
+        element={
+          <ProtectedRoute allowedRoles={["WORKER", "PROFESSIONAL"]}>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/create-job"
+        element={
+          <ProtectedRoute allowedRoles={["CUSTOMER", "USER"]}>
+            <CreateJobRequest />
           </ProtectedRoute>
         }
       />
@@ -78,6 +136,7 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

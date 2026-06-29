@@ -70,6 +70,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/reviews/my-reviews").hasRole("CUSTOMER")
                         .requestMatchers("/api/reviews/job/**").authenticated()
                         .requestMatchers("/api/reviews/worker/**").permitAll()
+                        .requestMatchers("/api/customer/dashboard/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/worker/dashboard/**").hasRole("WORKER")
+                        .requestMatchers("/api/images/profile").authenticated()
+                        .requestMatchers("/api/images/job/before/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/images/job/after/**").hasRole("WORKER")
+
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
 
