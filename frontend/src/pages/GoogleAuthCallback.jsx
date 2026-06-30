@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAppStore } from "../app/store";
-import { loginWithGoogleCode } from "../lib/authApi";
+import { loginWithGoogleCode, getGoogleRedirectUri } from "../lib/authApi";
 
 export default function GoogleAuthCallback() {
   const navigate = useNavigate();
@@ -43,7 +43,7 @@ export default function GoogleAuthCallback() {
     }
     const payload = {
       code,
-      redirectUri=VITE_GOOGLE_OAUTH_REDIRECT_URI || `${window.location.origin}/auth/google/callback`,
+      redirectUri: getGoogleRedirectUri(),
       role: pendingRoleData?.role || "CUSTOMER",
       tradeCategory: pendingRoleData?.tradeCategory || null,
       experienceYears: pendingRoleData?.experienceYears || 0,

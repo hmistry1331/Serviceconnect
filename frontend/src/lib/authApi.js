@@ -1,4 +1,25 @@
-import { getApiBaseUrl, parseResponse } from "./utils";
+function getApiBaseUrl() {
+  return (
+    import.meta.env.VITE_API_URL ||
+    import.meta.env.VITE_API_BASE_URL ||
+    "http://localhost:8080"
+  );
+}
+
+async function parseResponse(response) {
+  const responseText = await response.text();
+
+  if (!responseText) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(responseText);
+  } catch {
+    return { message: responseText };
+  }
+}
+
 async function postJson(path, payload) {
   const response = await fetch(`${getApiBaseUrl()}${path}`, {
     method: "POST",
@@ -30,11 +51,17 @@ export async function loginWithGoogleCode(payload) {
   return postJson("/api/auth/oauth/google/callback", payload);
 }
 
+
+export function getGoogleRedirectUri() {
+  return (
+    import.meta.env.VITE_GOOGLE_REDIRECT_URI ||
+    `${window.location.origin}/auth/google/callback`
+  );
+}
+
 export function buildGoogleOAuthUrl() {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-  const redirectUri =
-    import.meta.env.VITE_GOOGLE_REDIRECT_URI ||
-    `${window.location.origin}/auth/google/callback`;
+  const redirectUri = getGoogleRedirectUri();
 
   if (!clientId) {
     return null;
