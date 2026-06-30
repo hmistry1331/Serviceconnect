@@ -43,7 +43,7 @@ export default function GoogleAuthCallback() {
     }
     const payload = {
       code,
-      redirectUri: window.location.origin + "/auth/google/callback",
+      redirectUri=VITE_GOOGLE_OAUTH_REDIRECT_URI || `${window.location.origin}/auth/google/callback`,
       role: pendingRoleData?.role || "CUSTOMER",
       tradeCategory: pendingRoleData?.tradeCategory || null,
       experienceYears: pendingRoleData?.experienceYears || 0,
