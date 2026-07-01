@@ -1,4 +1,24 @@
-import { getApiBaseUrl, parseResponse } from "./utils";
+function getApiBaseUrl() {
+  return (
+    import.meta.env.VITE_API_URL ||
+    import.meta.env.VITE_API_BASE_URL ||
+    "http://localhost:8080"
+  );
+}
+
+async function parseResponse(response) {
+  const text = await response.text();
+
+  if (!text) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { message: text };
+  }
+}
 
 export async function createJobRequest(payload) {
   const token = localStorage.getItem("token");

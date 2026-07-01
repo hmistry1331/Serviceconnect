@@ -6,7 +6,7 @@ function getApiBaseUrl() {
   );
 }
 
-async function parseResponse(response) {
+export async function parseResponse(response) {
   const responseText = await response.text();
 
   if (!responseText) {

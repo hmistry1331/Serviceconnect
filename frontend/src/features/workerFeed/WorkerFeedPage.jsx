@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useAppStore } from "../../app/store";
 import { SC_THEME } from "@/lib/theme";
-
+import { parseResponse } from "@/lib/authApi";
 const NAV = [
   { label: "Feed", icon: LayoutGrid, to: "/feed" },
   { label: "Schedule", icon: Calendar, to: "/schedule" },
@@ -43,12 +43,6 @@ const apiBaseUrl =
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE_URL ||
   "http://localhost:8080";
-
-const FEED_THEME = {
-  ...SC_THEME,
-  surfaceAlt: "#071111",
-  accentSoft: "rgba(232,197,71,0.12)",
-};
 
 function formatMoney(amount) {
   const num = Number(amount || 0);
@@ -73,6 +67,24 @@ function formatDateTime(value) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function formatWorkerFeedError(message) {
+  const normalized = String(message || "").toLowerCase();
+
+  if (normalized.includes("not verified")) {
+    return "Your worker account is pending verification. Please wait for admin approval, then refresh this page.";
+  }
+
+  if (normalized.includes("worker profile not found")) {
+    return "Your worker profile could not be found. Please complete your worker registration first.";
+  }
+
+  if (normalized.includes("forbidden") || normalized.includes("access denied")) {
+    return "You do not have permission to view the worker feed.";
+  }
+
+  return message || "Failed to load worker feed.";
 }
 
 export default function WorkerFeedPage() {
@@ -111,14 +123,14 @@ export default function WorkerFeedPage() {
       });
 
       if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text || "Failed to load worker feed.");
+        const data = await parseResponse(response);
+        throw new Error(formatWorkerFeedError(data.message || "Failed to load worker feed."));
       }
 
       const data = await response.json();
       setWorkerFeedJobs(Array.isArray(data) ? data : []);
     } catch (err) {
-      setWorkerFeedError(err.message || "Failed to load worker feed.");
+      setWorkerFeedError(formatWorkerFeedError(err.message || "Failed to load worker feed."));
     } finally {
       setWorkerFeedLoading(false);
     }
@@ -261,8 +273,8 @@ export default function WorkerFeedPage() {
     <div
       style={{
         minHeight: "100vh",
-        backgroundColor: FEED_THEME.bg,
-        color: FEED_THEME.text,
+        backgroundColor: "#020b0b",
+        color: "#ffffff",
         fontFamily: "'DM Sans', sans-serif",
       }}
     >
@@ -274,23 +286,23 @@ export default function WorkerFeedPage() {
           gap: 10px;
           padding: 10px 14px;
           border-radius: 12px;
-          color: #6f9494;
+          color: #648484;
           text-decoration: none;
           font-size: 13px;
           font-weight: 600;
           border: 1px solid transparent;
           transition: all .15s ease;
         }
-        .nav-item:hover { color: #b7d0d0; background: rgba(232,197,71,0.06); }
-        .nav-item.active { color: #e8c547; border-color: rgba(232,197,71,0.24); background: rgba(232,197,71,0.1); }
+        .nav-item:hover { color: #a5c5c5; background: rgba(255,255,255,0.03); }
+        .nav-item.active { color: #e8c547; border-color: rgba(232,197,71,0.18); background: rgba(232,197,71,0.08); }
       `}</style>
 
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 18px 32px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: 16 }}>
           <aside
             style={{
-              background: FEED_THEME.surfaceAlt,
-              border: `1px solid ${FEED_THEME.border}`,
+              background: "#071111",
+              border: "1px solid rgba(255,255,255,0.08)",
               borderRadius: 16,
               padding: 14,
               height: "fit-content",
@@ -321,8 +333,8 @@ export default function WorkerFeedPage() {
           <main>
             <header
               style={{
-                background: FEED_THEME.surfaceAlt,
-                border: `1px solid ${FEED_THEME.border}`,
+                background: "#071111",
+                border: "1px solid rgba(255,255,255,0.08)",
                 borderRadius: 16,
                 padding: "16px 18px",
                 marginBottom: 14,
@@ -339,7 +351,7 @@ export default function WorkerFeedPage() {
                 <button
                   onClick={fetchWorkerFeed}
                   style={{
-                    background: FEED_THEME.accent,
+                    background: "#e8c547",
                     color: "#0d1a1a",
                     border: 0,
                     borderRadius: 10,
@@ -354,18 +366,18 @@ export default function WorkerFeedPage() {
               </div>
 
               <div style={{ marginTop: 12, position: "relative", maxWidth: 420 }}>
-                <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: FEED_THEME.muted }} />
+                <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#648484" }} />
                 <input
                   value={search}
                   onChange={(e) => setWorkerFeedSearch(e.target.value)}
                   placeholder="Search by customer, status, category, location"
                   style={{
                     width: "100%",
-                    background: FEED_THEME.surface,
-                    border: `1px solid ${FEED_THEME.border}`,
+                    background: "#0a1818",
+                    border: "1px solid rgba(255,255,255,0.09)",
                     borderRadius: 10,
                     height: 38,
-                    color: FEED_THEME.text,
+                    color: "#fff",
                     padding: "0 12px 0 34px",
                     fontSize: 13,
                   }}
@@ -374,28 +386,43 @@ export default function WorkerFeedPage() {
 
               <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10 }}>
                 {[
-                  { label: "Total", value: filteredJobs.length, color: FEED_THEME.text },
-                  { label: "Pending", value: pendingCount, color: FEED_THEME.accent },
-                  { label: "Accepted", value: acceptedCount, color: "#b7d0d0" },
-                  { label: "Quote Received", value: quoteReceivedCount, color: "#b7d0d0" },
+                  { label: "Total", value: filteredJobs.length, color: "#fff" },
+                  { label: "Pending", value: pendingCount, color: "#e8c547" },
+                  { label: "Accepted", value: acceptedCount, color: "#34d399" },
+                  { label: "Quote Received", value: quoteReceivedCount, color: "#93c5fd" },
                 ].map((stat) => (
-                  <div key={stat.label} style={{ background: FEED_THEME.surface, border: `1px solid ${FEED_THEME.border}`, borderRadius: 12, padding: "12px 13px" }}>
-                    <p style={{ margin: 0, fontSize: 11, color: FEED_THEME.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>{stat.label}</p>
+                  <div key={stat.label} style={{ background: "#0a1818", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "12px 13px" }}>
+                    <p style={{ margin: 0, fontSize: 11, color: "#5b7a7a", textTransform: "uppercase", letterSpacing: "0.08em" }}>{stat.label}</p>
                     <p style={{ margin: "5px 0 0", fontSize: 22, fontWeight: 800, color: stat.color }}>{stat.value}</p>
                   </div>
                 ))}
               </div>
 
               {statusMessage ? (
-                <p style={{ marginTop: 12, marginBottom: 0, color: "#b7d0d0", fontSize: 13 }}>{statusMessage}</p>
+                <p style={{ marginTop: 12, marginBottom: 0, color: "#9ed5c0", fontSize: 13 }}>{statusMessage}</p>
               ) : null}
-              {error ? <p style={{ marginTop: 12, marginBottom: 0, color: "#fca5a5", fontSize: 13 }}>{error}</p> : null}
+              {error ? (
+                <div
+                  style={{
+                    marginTop: 12,
+                    padding: "12px 14px",
+                    borderRadius: 12,
+                    border: "1px solid rgba(248,113,113,0.28)",
+                    background: "rgba(248,113,113,0.08)",
+                    color: "#fecaca",
+                    fontSize: 13,
+                    lineHeight: 1.55,
+                  }}
+                >
+                  {error}
+                </div>
+              ) : null}
             </header>
 
             {loading ? (
-              <div style={{ padding: "36px 0", textAlign: "center", color: FEED_THEME.muted }}>Loading worker feed...</div>
+              <div style={{ padding: "36px 0", textAlign: "center", color: "#6a8a8a" }}>Loading worker feed...</div>
             ) : filteredJobs.length === 0 ? (
-              <div style={{ padding: "36px 0", textAlign: "center", color: FEED_THEME.muted }}>No jobs matched your current search.</div>
+              <div style={{ padding: "36px 0", textAlign: "center", color: "#6a8a8a" }}>No jobs matched your current search.</div>
             ) : (
               <section style={{ display: "grid", gap: 12 }}>
                 {filteredJobs.map((job) => {
@@ -409,8 +436,8 @@ export default function WorkerFeedPage() {
                     <article
                       key={job.id}
                       style={{
-                        background: FEED_THEME.surfaceAlt,
-                        border: `1px solid ${FEED_THEME.border}`,
+                        background: "#071111",
+                        border: "1px solid rgba(255,255,255,0.08)",
                         borderRadius: 16,
                         padding: "16px 16px 14px",
                       }}
@@ -426,7 +453,7 @@ export default function WorkerFeedPage() {
                           </div>
                         </div>
 
-                        <div style={{ display: "inline-flex", borderRadius: 999, fontSize: 11, fontWeight: 700, padding: "5px 10px", border: `1px solid ${FEED_THEME.border}`, background: FEED_THEME.accentSoft, color: "#d8e8e8" }}>
+                        <div style={{ display: "inline-flex", borderRadius: 999, fontSize: 11, fontWeight: 700, padding: "5px 10px", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)", color: "#d0e3e3" }}>
                           {job.status || "UNKNOWN"}
                         </div>
                       </div>
@@ -438,11 +465,11 @@ export default function WorkerFeedPage() {
                         <p style={{ margin: 0, fontSize: 13, display: "flex", alignItems: "center", gap: 4 }}><Clock size={13} /> {formatDateTime(job.createdAt)}</p>
                       </div>
 
-                      <p style={{ margin: "12px 0 0", color: "#b7d0d0", fontSize: 13, lineHeight: 1.55 }}>
+                      <p style={{ margin: "12px 0 0", color: "#bdd0d0", fontSize: 13, lineHeight: 1.55 }}>
                         {job.description || "No description provided."}
                       </p>
 
-                      <div style={{ marginTop: 12, color: FEED_THEME.muted, fontSize: 12 }}>
+                      <div style={{ marginTop: 12, color: "#6f9191", fontSize: 12 }}>
                         Updated: {formatDateTime(job.updatedAt)}
                       </div>
 
@@ -473,7 +500,7 @@ export default function WorkerFeedPage() {
                             disabled={isActionLoading}
                             style={{
                               border: "none",
-                              background: FEED_THEME.accent,
+                              background: "#e8c547",
                               color: "#0d1a1a",
                               borderRadius: 10,
                               height: 36,
@@ -496,13 +523,13 @@ export default function WorkerFeedPage() {
                         <div
                           style={{
                             marginTop: 12,
-                            background: FEED_THEME.surface,
-                            border: `1px solid ${FEED_THEME.border}`,
+                            background: "#0a1818",
+                            border: "1px solid rgba(255,255,255,0.08)",
                             borderRadius: 12,
                             padding: 12,
                           }}
                         >
-                          <p style={{ margin: "0 0 8px", fontSize: 12, color: FEED_THEME.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                          <p style={{ margin: "0 0 8px", fontSize: 12, color: "#8fc3c3", textTransform: "uppercase", letterSpacing: "0.08em" }}>
                             Submit Quote (Backend fields)
                           </p>
 
@@ -514,9 +541,9 @@ export default function WorkerFeedPage() {
                               value={quoteDraft.quotedPrice}
                               onChange={(e) => handleQuoteInput(job.id, "quotedPrice", e.target.value)}
                               style={{
-                                background: FEED_THEME.surfaceAlt,
-                                color: FEED_THEME.text,
-                                border: `1px solid ${FEED_THEME.border}`,
+                                background: "#071111",
+                                color: "#fff",
+                                border: "1px solid rgba(255,255,255,0.12)",
                                 borderRadius: 8,
                                 height: 34,
                                 padding: "0 10px",
@@ -529,9 +556,9 @@ export default function WorkerFeedPage() {
                               value={quoteDraft.message}
                               onChange={(e) => handleQuoteInput(job.id, "message", e.target.value)}
                               style={{
-                                background: FEED_THEME.surfaceAlt,
-                                color: FEED_THEME.text,
-                                border: `1px solid ${FEED_THEME.border}`,
+                                background: "#071111",
+                                color: "#fff",
+                                border: "1px solid rgba(255,255,255,0.12)",
                                 borderRadius: 8,
                                 height: 34,
                                 padding: "0 10px",
@@ -546,8 +573,8 @@ export default function WorkerFeedPage() {
                             style={{
                               marginTop: 8,
                               border: "none",
-                              background: FEED_THEME.accent,
-                              color: "#0d1a1a",
+                              background: "#34d399",
+                              color: "#063326",
                               borderRadius: 8,
                               height: 34,
                               padding: "0 12px",

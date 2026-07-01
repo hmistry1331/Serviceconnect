@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAppStore } from "../app/store";
-import { loginWithGoogleCode, getGoogleRedirectUri } from "../lib/authApi";
+import { getGoogleRedirectUri, loginWithGoogleCode } from "../lib/authApi";
 
 export default function GoogleAuthCallback() {
   const navigate = useNavigate();
@@ -30,6 +30,7 @@ export default function GoogleAuthCallback() {
       navigate("/login", { replace: true });
       return;
     }
+
     let pendingRoleData = null;
     try {
       const stored = localStorage.getItem("google_pending_role");
@@ -41,14 +42,17 @@ export default function GoogleAuthCallback() {
     } finally {
       localStorage.removeItem("google_pending_role");
     }
+
     const payload = {
       code,
       redirectUri: getGoogleRedirectUri(),
       role: pendingRoleData?.role || "CUSTOMER",
+      phone: pendingRoleData?.phone || null,
       tradeCategory: pendingRoleData?.tradeCategory || null,
       experienceYears: pendingRoleData?.experienceYears || 0,
       serviceArea: pendingRoleData?.serviceArea || null,
     };
+
     loginWithGoogleCode(payload)
       .then((data) => {
         setAuthSession({ token: data.token, role: data.role });
@@ -64,24 +68,8 @@ export default function GoogleAuthCallback() {
         }
       })
       .catch((error) => {
-        const message = error.message || "";
-        const isNewUser = message.toLowerCase()
-          .includes("sign up first") ||
-          message.toLowerCase()
-            .includes("no account found");
-
-        if (isNewUser) {
-          toast.info(
-            "No account found! Please sign up first!",
-            { autoClose: 3000 }
-          );
-          setTimeout(() => {
-            navigate("/signup", { replace: true });
-          }, 2000); // ← wait 2 seconds so they see the toast!
-        } else {
-          toast.error(message || "Google sign-in failed.");
-          navigate("/login", { replace: true });
-        }
+        toast.error(error.message || "Google sign-in failed.");
+        navigate("/login", { replace: true });
       });
   }, [navigate, searchParams, setAuthSession]);
 
