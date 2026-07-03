@@ -243,16 +243,19 @@ public class WorkerDashboardServiceImpl
                 ? job.getWorker().getUser().getName()
                 : null;
         return new JobRequestResponse(
-                job.getId(),
-                job.getCustomer().getName(),
-                job.getCategory(),
-                job.getProblemDescription(),
-                job.getCustomerLocation(),
-                workerName, job.getBudgetAmount(),
-                null, 0, job.getStatus(),
-                workerName,
-                job.getCreatedAt(),
-                job.getUpdatedAt()
+                 job.getId(),                  
+            job.getCustomer().getName(),       
+            job.getCategory(),                 
+            job.getProblemDescription(),       
+            job.getCustomerLocation(),         
+            job.getCustomerCity(),             
+            job.getCustomerLatitude(),         
+            job.getCustomerLongitude(),        
+            job.getBudgetAmount(),             
+            job.getStatus(),                   
+            workerName,                        
+            job.getCreatedAt(),                
+            job.getUpdatedAt()                 
         );
     }
 

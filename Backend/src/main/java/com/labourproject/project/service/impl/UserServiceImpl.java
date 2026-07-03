@@ -133,7 +133,7 @@ public class UserServiceImpl implements UserService {
             return new AuthResponse("Your account is suspended. Please contact support.", null, false);
         }
 
-        String normalizedRole = normalizeRole(user.getRole());
+        String normalizedRole = normalizeRoleForLogin(user.getRole());
         String token = jwtUtil.generateToken(
                 user.getEmail(),
                 normalizedRole);
@@ -226,8 +226,7 @@ public class UserServiceImpl implements UserService {
                         "No account found for this Google email! " +
                                 "Please sign up first!",
                         null,
-                        false
-                    );
+                        false);
             }
             if (user.isSuspended()) {
                 return new AuthResponse("Your account is suspended. Please contact support.", null, false);
@@ -272,24 +271,27 @@ public class UserServiceImpl implements UserService {
     }
 
     private String normalizeRole(String role) {
-        if (role == null) {
+        if (role == null)
             return "CUSTOMER";
-        }
-
         String value = role.trim().toUpperCase(Locale.ROOT);
-
-        if ("ROLE_CUSTOMER".equals(value) || "USER".equals(value) || "ROLE_USER".equals(value)) {
-            return "CUSTOMER";
-        }
-        if ("ROLE_WORKER".equals(value)) {
+        if ("WORKER".equals(value) ||
+                "ROLE_WORKER".equals(value))
             return "WORKER";
-        }
-        if ("ROLE_ADMIN".equals(value)) {
-            return "ADMIN";
-        }
-
-        return value;
+        return "CUSTOMER";
     }
+
+    private String normalizeRoleForLogin(String role) {
+        if (role == null)
+            return "CUSTOMER";
+        String value = role.trim().toUpperCase(Locale.ROOT);
+        if ("WORKER".equals(value) ||
+                "ROLE_WORKER".equals(value))
+            return "WORKER";
+        if ("ADMIN".equals(value) ||
+                "ROLE_ADMIN".equals(value))
+            return "ADMIN";
+        return "CUSTOMER";
+    }   
 
     private double[] resolveCoordinatesWithinCity(
             GujaratLocationCatalog.CityPoint cityPoint,

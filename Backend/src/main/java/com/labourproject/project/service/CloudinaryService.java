@@ -10,10 +10,12 @@ public interface CloudinaryService {
 
   
     String uploadBeforeImage(MultipartFile file,
-                              int jobRequestId);
+                              int jobRequestId,
+                            String customerEmail);
 
     String uploadAfterImage(MultipartFile file,
-                             int jobRequestId);
+                             int jobRequestId,
+                            String workerEmail);
 
     void deleteImage(String imageUrl);
 }

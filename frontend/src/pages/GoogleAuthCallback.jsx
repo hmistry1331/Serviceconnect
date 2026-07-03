@@ -59,9 +59,7 @@ export default function GoogleAuthCallback() {
         toast.success(data.message || "Google login successful!");
 
         const role = String(data.role || "").toUpperCase();
-        if (role.includes("WORKER")) {
-          navigate("/", { replace: true });
-        } else if (role.includes("ADMIN")) {
+        if (role.includes("ADMIN")) {
           navigate("/admin", { replace: true });
         } else {
           navigate("/", { replace: true });

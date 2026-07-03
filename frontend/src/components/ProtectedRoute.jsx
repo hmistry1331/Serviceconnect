@@ -17,8 +17,8 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
   }
 
   if (allowedRoles.length > 0) {
-    const hasAccess = allowedRoles.some((allowedRole) =>
-      role.includes(normalizeRole(allowedRole))
+    const hasAccess = allowedRoles.some(r =>
+      r.toUpperCase() === role.toUpperCase()
     );
 
     if (!hasAccess) {

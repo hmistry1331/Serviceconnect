@@ -5,17 +5,16 @@ import { toast } from "react-toastify";
 import { useAppStore } from "../app/store";
 
 const NAV_LINKS = [
-  { label: "Home",         to: "/"          },
-  { label: "Dashboard",    to: "/dashboard" },
-  { label: "Services",     to: "/#services" },
-  { label: "How it works", to: "/#how"      },
-  { label: "Worker Feed",  to: "/feed"      },
+  { label: "Dashboard", to: "/dashboard" },
+  { label: "Services", to: "/#services" },
+  { label: "How it works", to: "/#how" },
+  { label: "Worker Feed", to: "/feed" },
   { label: "Create Request", to: "/create-job-request" },
 ];
 
 export default function Navbar() {
-  const [scrolled,       setScrolled]       = useState(false);
-  const [mobileOpen,     setMobileOpen]     = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [indicatorStyle, setIndicatorStyle] = useState({});
   const [userRole, setUserRole] = useState("");
   const isLoggedInFromStore = useAppStore((state) => state.auth.isLoggedIn);
@@ -24,11 +23,15 @@ export default function Navbar() {
   const location = useLocation();
   const isLoggedIn = isLoggedInFromStore || Boolean(localStorage.getItem("token"));
 
+  const isAdmin = userRole.includes("ADMIN");
   const canSeeWorkerFeed =
+    !isAdmin &&
     userRole.includes("WORKER") || userRole.includes("PROFESSIONAL");
   const canSeeCreateRequest =
+    !isAdmin &&
     userRole.includes("CUSTOMER") || userRole.includes("USER");
   const canSeeDashboard =
+    !isAdmin &&
     isLoggedIn && (
       userRole.includes("CUSTOMER") ||
       userRole.includes("USER") ||
@@ -45,6 +48,9 @@ export default function Navbar() {
     }
     if (link.to === "/create-job-request") {
       return canSeeCreateRequest;
+    }
+    if (isAdmin) {
+      return false;
     }
     return true;
   });
@@ -134,41 +140,41 @@ export default function Navbar() {
        */}
       <header
         style={{
-          position:   "fixed",
-          top:        0,
-          left:       0,
-          right:      0,
-          zIndex:     100,
-          padding:    scrolled ? "0" : "14px 24px",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          padding: scrolled ? "0" : "14px 24px",
           transition: "padding 0.45s cubic-bezier(0.4,0,0.2,1)",
-          animation:  "navSlideDown 0.5s cubic-bezier(0.22,1,0.36,1) both",
+          animation: "navSlideDown 0.5s cubic-bezier(0.22,1,0.36,1) both",
           pointerEvents: "none",
         }}
       >
         {/* Inner bar — morphs between pill and full-width bar */}
         <div
           style={{
-            maxWidth:       scrolled ? "none" : "900px",
-            margin:         "0 auto",
-            height:         scrolled ? "58px" : "52px",
-            borderRadius:   scrolled ? "0" : "16px",
-            background:     scrolled
+            maxWidth: scrolled ? "none" : "900px",
+            margin: "0 auto",
+            height: scrolled ? "58px" : "52px",
+            borderRadius: scrolled ? "0" : "16px",
+            background: scrolled
               ? "rgba(2,11,11,0.96)"
               : "rgba(10,24,24,0.84)",
             backdropFilter: "blur(20px)",
-            borderBottom:   "1px solid rgba(255,255,255,0.06)",
-            border:         scrolled
+            borderBottom: "1px solid rgba(255,255,255,0.06)",
+            border: scrolled
               ? "none"
               : "1px solid rgba(255,255,255,0.1)",
-            boxShadow:      scrolled
+            boxShadow: scrolled
               ? "0 1px 0 rgba(255,255,255,0.04)"
               : "0 8px 40px rgba(0,0,0,0.5)",
-            padding:        "0 20px",
-            display:        "flex",
-            alignItems:     "center",
+            padding: "0 20px",
+            display: "flex",
+            alignItems: "center",
             justifyContent: "space-between",
-            gap:            "16px",
-            pointerEvents:  "all",
+            gap: "16px",
+            pointerEvents: "all",
             transition: [
               "max-width 1s cubic-bezier(0.4,0,0.2,1)",
               "height 1s cubic-bezier(0.4,0,0.2,1)",
@@ -230,30 +236,62 @@ export default function Navbar() {
 
             <div className="hidden lg:flex" style={{ alignItems: "center", gap: "8px" }}>
               {isLoggedIn ? (
-                <button
-                  onClick={handleLogout}
-                  style={{
-                    display: "flex", alignItems: "center", gap: "6px",
-                    background: "transparent",
-                    border: "1px solid rgba(248,113,113,0.25)",
-                    borderRadius: "9px", padding: "7px 16px",
-                    color: "#fca5a5", fontSize: "13px", fontWeight: 700,
-                    cursor: "pointer",
-                    transition: "border-color 0.15s, color 0.15s, background 0.15s",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(248,113,113,0.45)";
-                    e.currentTarget.style.background = "rgba(248,113,113,0.08)";
-                    e.currentTarget.style.color = "#f87171";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(248,113,113,0.25)";
-                    e.currentTarget.style.background = "transparent";
-                    e.currentTarget.style.color = "#fca5a5";
-                  }}
-                >
-                  <LogOut size={14} /> Logout
-                </button>
+                <>
+                  {isAdmin && (
+                    <Link to="/admin" style={{ textDecoration: "none" }}>
+                      <button
+                        style={{
+                          display: "flex", alignItems: "center",
+                          gap: "6px",
+                          background: "rgba(232,197,71,0.1)",
+                          border: "1px solid rgba(232,197,71,0.35)",
+                          borderRadius: "9px", padding: "7px 16px",
+                          color: "#e8c547", fontSize: "13px",
+                          fontWeight: 800, cursor: "pointer",
+                          transition: "all 0.15s",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background =
+                            "rgba(232,197,71,0.2)";
+                          e.currentTarget.style.borderColor =
+                            "rgba(232,197,71,0.6)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background =
+                            "rgba(232,197,71,0.1)";
+                          e.currentTarget.style.borderColor =
+                            "rgba(232,197,71,0.35)";
+                        }}
+                      >
+                        🛡️ Admin Panel
+                      </button>
+                    </Link>
+                  )}
+                  <button
+                    onClick={handleLogout}
+                    style={{
+                      display: "flex", alignItems: "center", gap: "6px",
+                      background: "transparent",
+                      border: "1px solid rgba(248,113,113,0.25)",
+                      borderRadius: "9px", padding: "7px 16px",
+                      color: "#fca5a5", fontSize: "13px", fontWeight: 700,
+                      cursor: "pointer",
+                      transition: "border-color 0.15s, color 0.15s, background 0.15s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = "rgba(248,113,113,0.45)";
+                      e.currentTarget.style.background = "rgba(248,113,113,0.08)";
+                      e.currentTarget.style.color = "#f87171";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = "rgba(248,113,113,0.25)";
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.color = "#fca5a5";
+                    }}
+                  >
+                    <LogOut size={14} /> Logout
+                  </button>
+                </>
               ) : (
                 <>
                   <Link to="/login" style={{ textDecoration: "none" }}>
@@ -365,6 +403,26 @@ export default function Navbar() {
             <ChevronRight size={15} opacity={0.5} />
           </Link>
         ))}
+        {isAdmin && (
+          <Link
+            to="/admin"
+            onClick={() => setMobileOpen(false)}
+            style={{
+              display: "flex", alignItems: "center",
+              justifyContent: "space-between",
+              padding: "14px 16px", borderRadius: "12px",
+              background: location.pathname === "/admin"
+                ? "rgba(232,197,71,0.12)" : "rgba(232,197,71,0.05)",
+              border: "1px solid rgba(232,197,71,0.25)",
+              color: "#e8c547",
+              textDecoration: "none", fontSize: "15px",
+              fontWeight: 700,
+            }}
+          >
+            🛡️ Admin Panel
+            <ChevronRight size={15} opacity={0.5} />
+          </Link>
+        )}
 
         <div style={{ height: "1px", background: "rgba(255,255,255,0.06)", margin: "8px 0" }} />
 

@@ -38,9 +38,9 @@ public class ImageUploadController {
                 @RequestParam("file") MultipartFile file,
                 @PathVariable int jobRequestId,
                 Authentication authentication) {
-
+        String customerEmail = authentication.getName();
         String imageUrl = cloudinaryService
-                .uploadBeforeImage(file, jobRequestId);
+                .uploadBeforeImage(file, jobRequestId,customerEmail);
 
         return ResponseEntity.ok(Map.of(
             "message", "Before image uploaded successfully!",
@@ -55,9 +55,9 @@ public class ImageUploadController {
                 @RequestParam("file") MultipartFile file,
                 @PathVariable int jobRequestId,
                 Authentication authentication) {
-
+        String workerEmail = authentication.getName();  
         String imageUrl = cloudinaryService
-                .uploadAfterImage(file, jobRequestId);
+                .uploadAfterImage(file, jobRequestId,workerEmail);
 
         return ResponseEntity.ok(Map.of(
             "message", "After image uploaded successfully!",
