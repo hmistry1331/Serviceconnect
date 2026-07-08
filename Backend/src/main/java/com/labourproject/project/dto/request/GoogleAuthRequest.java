@@ -8,13 +8,19 @@ public class GoogleAuthRequest {
     private String tradeCategory;
     private int experienceYears;
     private String serviceArea;
+    private String phone;
     public GoogleAuthRequest() {
     }
 
     public String getCode() {
         return code;
     }
-
+    public String getPhone() {
+        return phone;
+    }
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
     public void setCode(String code) {
         this.code = code;
     }
