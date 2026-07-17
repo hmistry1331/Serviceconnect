@@ -20,8 +20,7 @@ import {
   X,
 } from "lucide-react";
 import { useAppStore } from "../../app/store";
-import { SC_THEME } from "@/lib/theme";
-import { parseResponse } from "@/lib/authApi";
+import {getWorkerJobs,acceptJob,submitQuote} from "../../services/workerapi";
 const NAV = [
   { label: "Feed", icon: LayoutGrid, to: "/feed" },
   { label: "Schedule", icon: Calendar, to: "/schedule" },
@@ -39,10 +38,6 @@ const CATEGORY_ICON = {
   Roofing: HomeIcon,
 };
 
-const apiBaseUrl =
-  import.meta.env.VITE_API_URL ||
-  import.meta.env.VITE_API_BASE_URL ||
-  "http://localhost:8080";
 
 function formatMoney(amount) {
   const num = Number(amount || 0);
@@ -116,18 +111,7 @@ export default function WorkerFeedPage() {
       setWorkerFeedLoading(true);
       setWorkerFeedError("");
 
-      const response = await fetch(`${apiBaseUrl}/api/jobs/worker/feed`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const data = await parseResponse(response);
-        throw new Error(formatWorkerFeedError(data.message || "Failed to load worker feed."));
-      }
-
-      const data = await response.json();
+      const data = await getWorkerJobs();
       setWorkerFeedJobs(Array.isArray(data) ? data : []);
     } catch (err) {
       setWorkerFeedError(formatWorkerFeedError(err.message || "Failed to load worker feed."));
@@ -155,19 +139,7 @@ export default function WorkerFeedPage() {
 
   const handleAccept = async (jobId) => {
     await withActionLoading(jobId, async () => {
-      const response = await fetch(`${apiBaseUrl}/api/jobs/accept/${jobId}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text || "Could not accept this job.");
-      }
-
-      const updatedJob = await response.json();
+     const updatedJob = await acceptJob(jobId);
       setWorkerFeedJobs((prev) => prev.map((job) => (job.id === jobId ? updatedJob : job)));
       setWorkerFeedStatusMessage(`Accepted job #${jobId}.`);
     }).catch((err) => {
@@ -204,22 +176,7 @@ export default function WorkerFeedPage() {
     }
 
     await withActionLoading(jobId, async () => {
-      const response = await fetch(`${apiBaseUrl}/api/quotes/submit/${jobId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          quotedPrice,
-          message: draft.message || "",
-        }),
-      });
-
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text || "Could not submit quote.");
-      }
+      await submitQuote(jobId, quotedPrice, draft);
 
       setWorkerFeedJobs((prev) =>
         prev.map((job) =>

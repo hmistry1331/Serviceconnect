@@ -6,7 +6,8 @@ public class AuthResponse {
     private String role;
     private boolean success;
     private String token; 
-
+    private boolean requireMoreinfo;
+    private String email;
   
     public AuthResponse() {}
 
@@ -15,13 +16,26 @@ public class AuthResponse {
         this.role = role;
         this.success = success;
     }
+
     public AuthResponse(String message, String role, boolean success, String token) {
         this.message = message;
         this.role = role;
         this.success = success;
         this.token = token;
     }
-
+   
+    public AuthResponse(String message, String role, boolean success, String token, boolean requireMoreinfo, String email) {
+        this.message = message;
+        this.role = role;
+        this.success = success;
+        this.token = token;
+        this.requireMoreinfo = requireMoreinfo;
+        this.email = email;
+    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public boolean isRequireMoreinfo() {return requireMoreinfo;}
+    public void setRequireMoreinfo(boolean requireMoreinfo) {this.requireMoreinfo = requireMoreinfo;}
     public String getToken() { return token; }
     public void setToken(String token) { this.token = token; }
 
@@ -40,6 +54,7 @@ public class AuthResponse {
                 "message='" + message + '\'' +
                 ", role='" + role + '\'' +
                 ", success=" + success +
+                ", requireMoreinfo=" + requireMoreinfo +
                 '}';
     }
 }

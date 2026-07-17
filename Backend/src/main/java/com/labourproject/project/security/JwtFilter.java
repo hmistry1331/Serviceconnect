@@ -58,7 +58,7 @@ public class JwtFilter extends OncePerRequestFilter {
                         new UsernamePasswordAuthenticationToken(
                                 email,
                                 null,
-                                List.of(new SimpleGrantedAuthority("ROLE_" + normalizedRole))
+                                List.of(new SimpleGrantedAuthority(normalizedRole))
                         );
                 SecurityContextHolder
                         .getContext()
@@ -76,8 +76,8 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         String value = role.trim().toUpperCase(Locale.ROOT);
-        if (value.startsWith("ROLE_")) {
-            value = value.substring(5);
+        if (!value.startsWith("ROLE_")) {
+            value = "ROLE_" + value;
         }
 
         if ("USER".equals(value)) {

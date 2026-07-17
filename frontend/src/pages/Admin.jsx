@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
 import {
   LayoutGrid, Users, ShieldCheck, Briefcase,
   TrendingUp, Clock, CheckCircle2, XCircle, AlertCircle,
@@ -7,15 +6,7 @@ import {
   X, AlertTriangle, Wrench, Zap, Wind, Hammer,
   Paintbrush, SprayCan, Home as HomeIcon, RefreshCw,
 } from "lucide-react";
-
-/* ─── axios instance ─── */
-const baseURL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
-const api = axios.create({ baseURL });
-api.interceptors.request.use((c) => {
-  const t = localStorage.getItem("token");
-  if (t) c.headers.Authorization = `Bearer ${t}`;
-  return c;
-});
+import apiClient from "../config/ApiClient";
 
 /* ─── helpers ─── */
 const fmt = (v) => (v ?? 0).toLocaleString("en-IN");
@@ -160,7 +151,7 @@ function StatsSection() {
   const load = useCallback(async () => {
     setLoading(true); setError("");
     try {
-      const { data: d } = await api.get("/api/admin/stats");
+      const { data: d } = await apiClient.get("/api/admin/stats");
       setData(d);
     } catch {
       setError("Failed to load stats.");

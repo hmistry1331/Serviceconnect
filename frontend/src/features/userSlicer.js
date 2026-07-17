@@ -13,7 +13,6 @@ export const createUserSlice = (set) => ({
   user: {
     username: "",
     email: "",
-    tempemail: "",
     authLoading: false,
     verifying: false,
   },
@@ -56,15 +55,6 @@ export const createUserSlice = (set) => ({
         ...state.user,
         username: username || "",
         email: email || "",
-      },
-    }));
-  },
-
-  setTempEmail: (tempemail) => {
-    set((state) => ({
-      user: {
-        ...state.user,
-        tempemail: tempemail || "",
       },
     }));
   },

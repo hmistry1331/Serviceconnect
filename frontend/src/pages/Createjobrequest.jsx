@@ -6,7 +6,7 @@ import {
   ChevronRight, CheckCircle2, AlertCircle, Loader2,
   ArrowLeft, Sparkles,
 } from "lucide-react";
-import { createJobRequest } from "@/lib/api";
+import { createJobRequest } from "@/services/api";
 import { GUJARAT_CITIES, getCityByValue, getNearestSupportedCity } from "@/lib/gujaratCities";
 import { SC_THEME } from "@/lib/theme";
 

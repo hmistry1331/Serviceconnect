@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, X } from "lucide-react";
 import { toast } from "react-toastify";
 import { useAppStore } from "../app/store";
-import { buildGoogleOAuthUrl, login } from "../lib/authApi";
+import { buildGoogleOAuthUrl, login } from "../services/authApi";
 import { SC_THEME } from "../lib/theme";
 
 const AUTH_THEME = SC_THEME;

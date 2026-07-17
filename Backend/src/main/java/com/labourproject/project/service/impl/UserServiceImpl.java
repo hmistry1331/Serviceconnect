@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    @Value("${google.oauth.client-id:}")
+    @Value("${google.oauth.client-id:}") 
     private String googleClientId;
 
     @Value("${google.oauth.client-secret:}")
@@ -47,7 +47,7 @@ public class UserServiceImpl implements UserService {
     @Value("${google.oauth.redirect-uri:}")
     private String googleRedirectUri;
 
-    public UserServiceImpl(UserRepository userRepository,
+    public  UserServiceImpl(UserRepository userRepository,
             WorkerRepository workerRepository,
             PasswordEncoder passwordEncoder,
             JwtUtil jwtUtil) {
@@ -142,7 +142,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public AuthResponse loginWithGoogle(
-            String code, String redirectUri, String role, String tradeCategory, int experienceYears,
+            String code, String redirectUri, String role, String phone, String tradeCategory, int experienceYears,
             String serviceArea) {
         if (code == null || code.isBlank()) {
             return new AuthResponse("Google authorization code is required!", null, false);
@@ -216,58 +216,93 @@ public class UserServiceImpl implements UserService {
             if (!emailVerified) {
                 return new AuthResponse("Google account email is not verified.", null, false);
             }
-            boolean isnewUser = !userRepository.existsByEmail(email);
-            String resolvedRole = normalizeRole(
-                    (role != null && !role.isBlank()) ? role : "CUSTOMER");
-            User user = userRepository.findByEmail(email).orElse(null);
-
-            if (user == null) {
-                return new AuthResponse(
-                        "No account found for this Google email! " +
-                                "Please sign up first!",
-                        null,
-                        false);
-            }
+            User user = userRepository.findByEmail(email).orElseGet(() -> {
+                User newUser = new User();
+                newUser.setName(name != null ? name : "Google User");
+                newUser.setEmail(email);
+                newUser.setRole("PENDING_PROFILE"); // Set as pending so they don't get full access yet
+                newUser.setPhone(""); // Phone will be empty for now
+                newUser.setCreatedAt(LocalDateTime.now());
+                newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+                return userRepository.save(newUser);
+            });
             if (user.isSuspended()) {
                 return new AuthResponse("Your account is suspended. Please contact support.", null, false);
             }
-            if (isnewUser && "WORKER".equals(resolvedRole)) {
-                if (serviceArea == null || serviceArea.isBlank()) {
-                    return new AuthResponse(
-                            "Service area is required for worker registration!",
-                            null, false);
-                }
-                if (tradeCategory == null || tradeCategory.isBlank()) {
-                    return new AuthResponse(
-                            "Trade category is required for worker registration!",
-                            null, false);
-                }
 
-                try {
-                    GujaratLocationCatalog.CityPoint cityPoint = GujaratLocationCatalog.getCityPoint(serviceArea);
-                    Worker workerProfile = new Worker();
-                    workerProfile.setUser(user);
-                    workerProfile.setTradeCategory(tradeCategory);
-                    workerProfile.setExperienceYears(experienceYears);
-                    workerProfile.setServiceArea(cityPoint.getCity());
-                    workerProfile.setHomeCity(cityPoint.getCity());
-                    workerProfile.setHomeLatitude(cityPoint.getLatitude());
-                    workerProfile.setHomeLongitude(cityPoint.getLongitude());
-                    workerProfile.setVerificationStatus("PENDING");
-                    workerProfile.setAvailable(false); // default to unavailable until verified
-                    workerRepository.save(workerProfile);
-                } catch (IllegalArgumentException ex) {
-                    return new AuthResponse(ex.getMessage(), null, false);
-                }
-
+            // 2. If their profile is pending, stop here and tell the frontend to show the
+            // form
+            if ("PENDING_PROFILE".equals(user.getRole())) {
+                String tempToken = jwtUtil.generateToken(user.getEmail(), "PENDING_PROFILE");
+                AuthResponse response = new AuthResponse("Please complete your profile.", "PENDING_PROFILE", true,
+                        tempToken);
+                response.setRequireMoreinfo(true); // Frontend will check this flag
+                response.setEmail(user.getEmail()); // Send back the email for the frontend to pre-fill
+                return response;
             }
-            String normalizedRole = normalizeRole(user.getRole());
+
+            // 3. Normal Login (They already completed their profile in the past)
+            String normalizedRole = normalizeRoleForLogin(user.getRole());
             String token = jwtUtil.generateToken(user.getEmail(), normalizedRole);
 
             return new AuthResponse("Google login successful!", user.getRole(), true, token);
+
         } catch (RestClientException ex) {
             return new AuthResponse("Google authentication failed. Please try again.", null, false);
         }
+
+    }
+
+    @Override
+    @Transactional
+    public AuthResponse completeProfile(
+            String email,
+            String role,
+            String phone,
+            String tradeCategory,
+            int experienceYears,
+            String serviceArea) {
+        User user = userRepository.findByEmail(email).orElse(null);
+
+        if (user == null) {
+            return new AuthResponse("User not found.", null, false);
+        }
+
+        if (!"PENDING_PROFILE".equals(user.getRole())) {
+            return new AuthResponse("Profile is already completed.", null, false);
+        }
+
+        String resolvedRole = normalizeRole(role);
+
+        // Update the main User entity
+        user.setRole(resolvedRole);
+        user.setPhone(phone);
+        userRepository.save(user);
+
+        // If they chose to be a worker, create the worker profile now
+        if ("WORKER".equals(resolvedRole)) {
+            try {
+                GujaratLocationCatalog.CityPoint cityPoint = GujaratLocationCatalog
+                        .getCityPoint(serviceArea);
+                Worker workerProfile = new Worker();
+                workerProfile.setUser(user);
+                workerProfile.setTradeCategory(tradeCategory);
+                workerProfile.setExperienceYears(experienceYears);
+                workerProfile.setServiceArea(cityPoint.getCity());
+                workerProfile.setHomeCity(cityPoint.getCity());
+                workerProfile.setHomeLatitude(cityPoint.getLatitude());
+                workerProfile.setHomeLongitude(cityPoint.getLongitude());
+                workerProfile.setVerificationStatus("PENDING");
+                workerProfile.setAvailable(false);
+                workerRepository.save(workerProfile);
+            } catch (IllegalArgumentException ex) {
+                return new AuthResponse(ex.getMessage(), null, false);
+            }
+        }
+
+        // Generate their final, real token
+        String token = jwtUtil.generateToken(user.getEmail(), resolvedRole);
+        return new AuthResponse("Profile completed successfully!", resolvedRole, true, token);
     }
 
     private String normalizeRole(String role) {
@@ -291,7 +326,7 @@ public class UserServiceImpl implements UserService {
                 "ROLE_ADMIN".equals(value))
             return "ADMIN";
         return "CUSTOMER";
-    }   
+    }
 
     private double[] resolveCoordinatesWithinCity(
             GujaratLocationCatalog.CityPoint cityPoint,

@@ -8,7 +8,3 @@ export const SERVICE_CATEGORIES = [
   { value: "CLEANING",   label: "Cleaning"   },
   { value: "ROOFING",    label: "Roofing"    },
 ];
-
-export function getCategoryByValue(value) {
-  return SERVICE_CATEGORIES.find((c) => c.value === value) || null;
-}

@@ -10,13 +10,20 @@ public interface UserService {
 
     AuthResponse login(LoginRequest request);
 
+    AuthResponse completeProfile(String email,
+            String role,
+            String phone,
+            String tradeCategory,
+            int experienceYears,
+            String serviceArea);
+
     AuthResponse loginWithGoogle(
-    String code,
-    String redirectUri,
-    String role,
-    String tradeCategory,
-    int experienceYears,
-    String serviceArea
-);
+            String code,
+            String redirectUri,
+            String role,
+            String phone,
+            String tradeCategory,
+            int experienceYears,
+            String serviceArea);
 
 }

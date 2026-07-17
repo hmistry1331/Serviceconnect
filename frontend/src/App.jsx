@@ -14,6 +14,7 @@ import JobRequestDetail from "./pages/JobRequestDetail";
 import WorkerJobDetail from "./pages/WorkerJobDetail";
 import NotFound from "./pages/Notfound";
 import SubmitReview from "./pages/SubmitReview";
+import CompleteProfile from "./pages/CompleteProfile";
 export default function App() {
   return (
     <Routes>
@@ -22,7 +23,7 @@ export default function App() {
       <Route path="/login" element={<Signin />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
-
+      <Route path="/complete-profile" element={<CompleteProfile />} />
         <Route
         path="/feed"
         element={

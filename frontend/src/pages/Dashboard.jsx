@@ -8,52 +8,9 @@ import {
   Activity, Award, MessageSquare, ArrowUpRight,
 } from "lucide-react";
 import { SC_THEME } from "@/lib/theme";
+import { apiFetch, apiUploadProfileImage, apiUpdateWorkerLocation } from "../services/dashboardapi";
 
-const BASE = import.meta.env.VITE_API_URL || "http://localhost:8080";
-async function apiFetch(path) {
-  const token = localStorage.getItem("token");
-  const res = await fetch(`${BASE}${path}`, {
-    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
-}
 
-async function apiUploadProfileImage(file) {
-  const token = localStorage.getItem("token");
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const res = await fetch(`${BASE}/api/images/profile`, {
-    method: "POST",
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-    body: formData,
-  });
-
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || "Failed to upload profile image.");
-  return data?.imageUrl || "";
-}
-
-async function apiUpdateWorkerLocation(locationData) {
-  const token = localStorage.getItem("token");
-  const res = await fetch(`${BASE}/api/worker/dashboard/location`, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(locationData),
-  });
-
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.message || "Failed to update location.");
-  }
-  return res.json();
-}
-
-/* ─── Helpers — unchanged ─── */
 const fmt = (v) => (v ?? 0).toLocaleString("en-IN");
 const fmtAmt = (v) => (v != null && Number(v) > 0) ? `₹${Number(v).toLocaleString("en-IN")}` : "—";
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—";
