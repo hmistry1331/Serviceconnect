@@ -1,17 +1,35 @@
 package com.labourproject.project.dto.request;
-
+import jakarta.validation.constraints.*;
 public class SignupRequest {
 
+    @NotBlank(message = "Name is required!")
+    @Size(min = 2, max = 50,
+            message = "Name must be between 2 and 50 characters!")
     private String name;
-    private String email;
-    private String password;
-    private String phone;
-    private String role;  
 
-    
+    @NotBlank(message = "Email is required!")
+    @Email(message = "Email should be valid!")
+    private String email;
+
+    @NotBlank(message = "Password is required!")
+    @Size(min = 6, max = 100,
+            message = "Password must be between 6 and 100 characters!")
+    private String password;
+
+    @NotBlank(message = "Phone number is required!")
+    @Pattern(
+            regexp = "^[0-9]{10}$",
+            message = "Phone number must be exactly 10 digits!"
+    )
+    private String phone;
+
+    @NotBlank(message = "Role is required!")
+    private String role;
+
+
     private String tradeCategory;
-    private int experienceYears; 
-    private String serviceArea; 
+    private int experienceYears;
+    private String serviceArea;
     private Double workerLatitude;
     private Double workerLongitude;
 
@@ -38,7 +56,7 @@ public class SignupRequest {
     public int getExperienceYears() { return experienceYears; }
     public void setExperienceYears(int experienceYears) { this.experienceYears = experienceYears; }
 
-        public String getServiceArea() { return serviceArea; }
+    public String getServiceArea() { return serviceArea; }
     public void setServiceArea(String serviceArea) { this.serviceArea = serviceArea; }
     public Double getWorkerLatitude() { return workerLatitude; }
     public void setWorkerLatitude(Double workerLatitude) { this.workerLatitude = workerLatitude; }

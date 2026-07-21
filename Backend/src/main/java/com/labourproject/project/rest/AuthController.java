@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -20,7 +22,7 @@ public class AuthController {
     private UserService userService;
 
     @PostMapping("/signup")
-    public ResponseEntity<AuthResponse> signup(@RequestBody SignupRequest request) {
+    public ResponseEntity<AuthResponse> signup(@RequestBody @Valid SignupRequest request) {
 
         AuthResponse response = userService.signup(request);
 
@@ -32,7 +34,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest request) {
 
         AuthResponse response = userService.login(request);
 
@@ -44,7 +46,7 @@ public class AuthController {
     }
 
     @PostMapping("/oauth/google/callback")
-    public ResponseEntity<AuthResponse> googleCallback(@RequestBody GoogleAuthRequest request) {
+    public ResponseEntity<AuthResponse> googleCallback(@RequestBody @Valid GoogleAuthRequest request) {
 
         AuthResponse response = userService.loginWithGoogle(
                 request.getCode(),

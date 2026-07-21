@@ -1,9 +1,14 @@
 package com.labourproject.project.dto.request;
 
+import jakarta.validation.constraints.*;
 public class GoogleAuthRequest {
 
+    @NotBlank(message = "Authorization code is required")
     private String code;
+
+    @NotBlank(message = "Redirect URI is required")
     private String redirectUri;
+
     private String role;
     private String tradeCategory;
     private int experienceYears;

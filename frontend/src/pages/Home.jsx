@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { InfiniteMovingCards } from "@/components/ui/infinite-moving-cards";
 import { StickyScroll } from "@/components/ui/sticky-scroll-reveal";
+import { useAppStore } from "../app/store";
 import {
     Wrench,
     Zap,
@@ -108,8 +109,15 @@ const CATEGORY_STICKY_CONTENT = MOCK_CATEGORIES.map((cat) => {
 
 export default function LandingPage() {
     const [searchQuery, setSearchQuery] = useState("");
-    const [revealed, setRevealed] = useState(false);   // brand reveal trigger
-    const [lettersDone, setLettersDone] = useState(false);   // after reveal → steady state
+    const [revealed, setRevealed] = useState(false);
+    const [lettersDone, setLettersDone] = useState(false);
+
+    // ── Auth & role detection ──────────────────────────────
+    const isLoggedIn = useAppStore((s) => s.auth.isLoggedIn) || Boolean(localStorage.getItem("token"));
+    const userRole   = (localStorage.getItem("role") || "").toUpperCase();
+    const isWorker   = userRole.includes("WORKER") || userRole.includes("PROFESSIONAL");
+    const isCustomer = userRole.includes("CUSTOMER") || userRole.includes("USER");
+    const navigate   = useNavigate();
 
     /* ── Trigger reveal on mount ── */
     useEffect(() => {
@@ -481,65 +489,99 @@ export default function LandingPage() {
                 }}
             >
                 <div style={{ maxWidth: "560px", margin: "0 auto" }}>
-                    <h2
-                        style={{
-                            fontFamily: "'Cormorant Garamond', serif",
-                            fontSize: "clamp(26px, 3.5vw, 38px)",
-                            fontWeight: 700,
-                            color: "#ffffff",
-                            marginBottom: "14px",
-                            letterSpacing: "-0.02em",
-                        }}
-                    >
-                        Got a problem at home?
-                    </h2>
-                    <p style={{ fontSize: "14px", color: "#5a8080", marginBottom: "28px", lineHeight: 1.7 }}>
-                        Describe it in plain language. Our AI instantly routes your request to the right vetted professional near you.
-                    </p>
-                    <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-                        <Link to="/signup">
-                            <button
-                                style={{
-                                    background: "#e8c547",
-                                    border: "none",
-                                    borderRadius: "10px",
-                                    padding: "12px 28px",
-                                    color: "#0d1a1a",
-                                    fontSize: "14px",
-                                    fontWeight: 800,
-                                    cursor: "pointer",
-                                    transition: "background 0.15s",
-                                }}
-                                onMouseEnter={(e) => (e.currentTarget.style.background = "#d4b33e")}
-                                onMouseLeave={(e) => (e.currentTarget.style.background = "#e8c547")}
-                            >
-                                Get started — it's free
-                            </button>
-                        </Link>
-                        <Link to="/login">
-                            <button
-                                style={{
-                                    background: "transparent",
-                                    border: "1px solid rgba(255,255,255,0.12)",
-                                    borderRadius: "10px",
-                                    padding: "12px 28px",
-                                    color: "#8aacac",
-                                    fontSize: "14px",
-                                    fontWeight: 600,
-                                    cursor: "pointer",
-                                    transition: "border-color 0.15s",
-                                }}
-                                onMouseEnter={(e) =>
-                                    (e.currentTarget.style.borderColor = "rgba(232,197,71,0.35)")
-                                }
-                                onMouseLeave={(e) =>
-                                    (e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)")
-                                }
-                            >
-                                Already have an account
-                            </button>
-                        </Link>
-                    </div>
+
+                    {/* ── Logged-in WORKER ── */}
+                    {isLoggedIn && isWorker && (
+                        <>
+                            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(26px,3.5vw,38px)", fontWeight: 700, color: "#ffffff", marginBottom: "14px", letterSpacing: "-0.02em" }}>
+                                Ready to find your next job?
+                            </h2>
+                            <p style={{ fontSize: "14px", color: "#5a8080", marginBottom: "28px", lineHeight: 1.7 }}>
+                                Browse open job requests from customers near you and send your quote.
+                            </p>
+                            <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+                                <button
+                                    onClick={() => navigate("/feed")}
+                                    style={{ background: "#e8c547", border: "none", borderRadius: "10px", padding: "12px 28px", color: "#0d1a1a", fontSize: "14px", fontWeight: 800, cursor: "pointer", transition: "background 0.15s" }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.background = "#d4b33e")}
+                                    onMouseLeave={(e) => (e.currentTarget.style.background = "#e8c547")}
+                                >
+                                    Browse Worker Feed
+                                </button>
+                                <button
+                                    onClick={() => navigate("/dashboard")}
+                                    style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "10px", padding: "12px 28px", color: "#8aacac", fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "border-color 0.15s" }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(232,197,71,0.35)")}
+                                    onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)")}
+                                >
+                                    My Dashboard
+                                </button>
+                            </div>
+                        </>
+                    )}
+
+                    {/* ── Logged-in CUSTOMER ── */}
+                    {isLoggedIn && isCustomer && (
+                        <>
+                            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(26px,3.5vw,38px)", fontWeight: 700, color: "#ffffff", marginBottom: "14px", letterSpacing: "-0.02em" }}>
+                                Got a problem at home?
+                            </h2>
+                            <p style={{ fontSize: "14px", color: "#5a8080", marginBottom: "28px", lineHeight: 1.7 }}>
+                                Describe it in plain language. Our AI instantly routes your request to the right vetted professional near you.
+                            </p>
+                            <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+                                <button
+                                    onClick={() => navigate("/create-job-request")}
+                                    style={{ background: "#e8c547", border: "none", borderRadius: "10px", padding: "12px 28px", color: "#0d1a1a", fontSize: "14px", fontWeight: 800, cursor: "pointer", transition: "background 0.15s" }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.background = "#d4b33e")}
+                                    onMouseLeave={(e) => (e.currentTarget.style.background = "#e8c547")}
+                                >
+                                    Post a Job Request
+                                </button>
+                                <button
+                                    onClick={() => navigate("/dashboard")}
+                                    style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "10px", padding: "12px 28px", color: "#8aacac", fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "border-color 0.15s" }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(232,197,71,0.35)")}
+                                    onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)")}
+                                >
+                                    My Dashboard
+                                </button>
+                            </div>
+                        </>
+                    )}
+
+                    {/* ── Not logged in ── */}
+                    {!isLoggedIn && (
+                        <>
+                            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(26px,3.5vw,38px)", fontWeight: 700, color: "#ffffff", marginBottom: "14px", letterSpacing: "-0.02em" }}>
+                                Got a problem at home?
+                            </h2>
+                            <p style={{ fontSize: "14px", color: "#5a8080", marginBottom: "28px", lineHeight: 1.7 }}>
+                                Describe it in plain language. Our AI instantly routes your request to the right vetted professional near you.
+                            </p>
+                            <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+                                <Link to="/signup">
+                                    <button
+                                        style={{ background: "#e8c547", border: "none", borderRadius: "10px", padding: "12px 28px", color: "#0d1a1a", fontSize: "14px", fontWeight: 800, cursor: "pointer", transition: "background 0.15s" }}
+                                        onMouseEnter={(e) => (e.currentTarget.style.background = "#d4b33e")}
+                                        onMouseLeave={(e) => (e.currentTarget.style.background = "#e8c547")}
+                                    >
+                                        Get started — it's free
+                                    </button>
+                                </Link>
+                                <Link to="/login">
+                                    <button
+                                        style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "10px", padding: "12px 28px", color: "#8aacac", fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "border-color 0.15s" }}
+                                        onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(232,197,71,0.35)")}
+                                        onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)")}
+                                    >
+                                        Already have an account
+                                    </button>
+                                </Link>
+                            </div>
+                        </>
+                    )}
+
                 </div>
             </section>
 
@@ -550,66 +592,179 @@ export default function LandingPage() {
                 style={{
                     background: "#020b0b",
                     borderTop: "1px solid rgba(255,255,255,0.06)",
-                    padding: "32px 2rem",
+                    padding: "56px 2rem 28px",
                 }}
             >
-                <div
-                    style={{
-                        maxWidth: "1100px",
-                        margin: "0 auto",
-                        display: "flex",
-                        flexWrap: "wrap",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: "20px",
-                    }}
-                >
-                    {/* Brand */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <div
-                            style={{
-                                width: 22,
-                                height: 22,
-                                borderRadius: "6px",
-                                background: "#e8c547",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                            }}
-                        >
-                            <Wrench size={12} color="#0d1a1a" strokeWidth={2.5} />
+                <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+
+                    {/* ── Top row: brand + columns ── */}
+                    <div
+                        style={{
+                            display: "grid",
+                            gridTemplateColumns: "1.8fr 1fr 1fr",
+                            gap: "48px",
+                            paddingBottom: "48px",
+                            borderBottom: "1px solid rgba(255,255,255,0.06)",
+                        }}
+                    >
+                        {/* Brand column */}
+                        <div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "9px", marginBottom: "14px" }}>
+                                <div
+                                    style={{
+                                        width: 28,
+                                        height: 28,
+                                        borderRadius: "7px",
+                                        background: "#e8c547",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        flexShrink: 0,
+                                    }}
+                                >
+                                    <Wrench size={14} color="#0d1a1a" strokeWidth={2.5} />
+                                </div>
+                                <span style={{ fontWeight: 800, fontSize: "15px", letterSpacing: "-0.03em", color: "#fff" }}>
+                                    Service<span style={{ color: "#e8c547" }}>Connect</span>
+                                </span>
+                            </div>
+                            <p style={{ fontSize: "13px", color: "#3a6060", lineHeight: 1.7, maxWidth: "260px" }}>
+                                AI-powered local service marketplace connecting homeowners with vetted professionals across Gujarat.
+                            </p>
+
+                            {/* Trust pills */}
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "20px" }}>
+                                {["Verified pros", "AI-matched", "Rated & reviewed"].map((t) => (
+                                    <span
+                                        key={t}
+                                        style={{
+                                            fontSize: "11px",
+                                            fontWeight: 600,
+                                            color: "#4a7070",
+                                            background: "rgba(255,255,255,0.03)",
+                                            border: "1px solid rgba(255,255,255,0.07)",
+                                            borderRadius: "20px",
+                                            padding: "4px 10px",
+                                        }}
+                                    >
+                                        {t}
+                                    </span>
+                                ))}
+                            </div>
                         </div>
-                        <span style={{ fontWeight: 800, fontSize: "14px", letterSpacing: "-0.02em" }}>
-                            Service<span style={{ color: "#e8c547" }}>Connect</span>
-                        </span>
+
+                        {/* Platform column */}
+                        <div>
+                            <p
+                                style={{
+                                    fontSize: "10px",
+                                    fontWeight: 700,
+                                    letterSpacing: "0.14em",
+                                    textTransform: "uppercase",
+                                    color: "#e8c547",
+                                    marginBottom: "18px",
+                                }}
+                            >
+                                Platform
+                            </p>
+                            <nav style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                                {[
+                                    { label: "Services",      to: "/services"      },
+                                    { label: "How it works",  to: "/how-it-works"  },
+                                    { label: "Post a job",    to: "/create-job"    },
+                                    { label: "Find a pro",    to: "/signup"        },
+                                ].map(({ label, to }) => (
+                                    <Link
+                                        key={label}
+                                        to={to}
+                                        style={{
+                                            fontSize: "13px",
+                                            color: "#4a7070",
+                                            textDecoration: "none",
+                                            fontWeight: 500,
+                                            transition: "color 0.15s",
+                                            width: "fit-content",
+                                        }}
+                                        onMouseEnter={(e) => (e.currentTarget.style.color = "#e8c547")}
+                                        onMouseLeave={(e) => (e.currentTarget.style.color = "#4a7070")}
+                                    >
+                                        {label}
+                                    </Link>
+                                ))}
+                            </nav>
+                        </div>
+
+                        {/* Company column */}
+                        <div>
+                            <p
+                                style={{
+                                    fontSize: "10px",
+                                    fontWeight: 700,
+                                    letterSpacing: "0.14em",
+                                    textTransform: "uppercase",
+                                    color: "#e8c547",
+                                    marginBottom: "18px",
+                                }}
+                            >
+                                Company
+                            </p>
+                            <nav style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                                {[
+                                    { label: "About",   to: "/about"   },
+                                    { label: "Contact", to: "/contact" },
+                                    { label: "Privacy", to: "/" },
+                                    { label: "Terms",   to: "/" },
+
+                                ].map((label) => (
+                                    <Link
+                                        key={label}
+                                        to={label.to}
+                                        style={{
+                                            fontSize: "13px",
+                                            color: "#4a7070",
+                                            textDecoration: "none",
+                                            fontWeight: 500,
+                                            transition: "color 0.15s",
+                                            width: "fit-content",
+                                        }}
+                                        onMouseEnter={(e) => (e.currentTarget.style.color = "#e8c547")}
+                                        onMouseLeave={(e) => (e.currentTarget.style.color = "#4a7070")}
+                                    >
+                                        {label.label}
+                                    </Link>
+                                ))}
+                            </nav>
+                        </div>
                     </div>
 
-                    {/* Links */}
-                    <nav style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
-                        {["About", "Terms", "Privacy", "Contact"].map((label) => (
-                            <a
-                                key={label}
-                                href="#"
-                                style={{
-                                    fontSize: "13px",
-                                    color: "#4a7070",
-                                    textDecoration: "none",
-                                    fontWeight: 500,
-                                    transition: "color 0.15s",
-                                }}
-                                onMouseEnter={(e) => (e.currentTarget.style.color = "#e8c547")}
-                                onMouseLeave={(e) => (e.currentTarget.style.color = "#4a7070")}
-                            >
-                                {label}
-                            </a>
-                        ))}
-                    </nav>
-
-                    {/* Copyright */}
-                    <p style={{ fontSize: "12px", color: "#2a4040" }}>
-                        © {new Date().getFullYear()} ServiceConnect. All rights reserved.
-                    </p>
+                    {/* ── Bottom row: copyright + made with ── */}
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            flexWrap: "wrap",
+                            gap: "12px",
+                            paddingTop: "24px",
+                        }}
+                    >
+                        <p style={{ fontSize: "12px", color: "#2a4040" }}>
+                            © {new Date().getFullYear()} ServiceConnect. All rights reserved.
+                        </p>
+                        <p style={{ fontSize: "12px", color: "#2a4040" }}>
+                            Built with React · Spring Boot · LangChain
+                        </p>
+                    </div>
                 </div>
+
+                {/* Responsive footer for mobile */}
+                <style>{`
+                    @media (max-width: 640px) {
+                        .footer-grid {
+                            grid-template-columns: 1fr !important;
+                        }
+                    }
+                `}</style>
             </footer>
         </div>
     );

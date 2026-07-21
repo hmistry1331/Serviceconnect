@@ -3,6 +3,7 @@ package com.labourproject.project.service.impl;
 import com.labourproject.project.dao.*;
 import com.labourproject.project.dto.response.*;
 import com.labourproject.project.entity.*;
+import com.labourproject.project.exceptions.ResourceNotFoundException;
 import com.labourproject.project.service.CustomerDashboardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,50 +25,50 @@ public class CustomerDashboardServiceImpl
     @Autowired
     private ReviewRepository reviewRepository;
 
-    
+
     @Override
     public CustomerDashboardResponse getSummary(
             String customerEmail) {
 
-      
+
         User customer = userRepository
                 .findByEmail(customerEmail)
                 .orElseThrow(() ->
-                    new RuntimeException("User not found!"));
+                        new ResourceNotFoundException("User not found!"));
 
-  
+
         List<Job_Requests> allJobs = jobRequestRepository
                 .findByCustomer(customer);
 
-        
+
         List<String> activeStatuses = Arrays.asList(
-            "PENDING", "ACCEPTED",
-            "QUOTE_RECEIVED", "IN_PROGRESS"
+                "PENDING", "ACCEPTED",
+                "QUOTE_RECEIVED", "IN_PROGRESS"
         );
 
-      
+
         int totalJobs = allJobs.size();
 
         int activeJobs = (int) allJobs.stream()
                 .filter(j -> activeStatuses
-                    .contains(j.getStatus()))
+                        .contains(j.getStatus()))
                 .count();
 
         int completedJobs = (int) allJobs.stream()
                 .filter(j -> "COMPLETED"
-                    .equals(j.getStatus()))
+                        .equals(j.getStatus()))
                 .count();
 
         int cancelledJobs = (int) allJobs.stream()
                 .filter(j -> "CANCELLED"
-                    .equals(j.getStatus()))
+                        .equals(j.getStatus()))
                 .count();
 
 
-        
+
         double totalSpent = allJobs.stream()
                 .filter(j -> "COMPLETED"
-                    .equals(j.getStatus()))
+                        .equals(j.getStatus()))
                 .mapToDouble(Job_Requests::getBudgetAmount)
                 .sum();
 
@@ -82,13 +83,13 @@ public class CustomerDashboardServiceImpl
         response.setCompletedJobs(completedJobs);
         response.setCancelledJobs(cancelledJobs);
         response.setTotalAmountSpent(
-            Math.round(totalSpent * 100.0) / 100.0
-        ); 
+                Math.round(totalSpent * 100.0) / 100.0
+        );
 
         return response;
     }
 
-  
+
     @Override
     public List<JobRequestResponse> getAllMyJobs(
             String customerEmail) {
@@ -96,19 +97,19 @@ public class CustomerDashboardServiceImpl
         User customer = userRepository
                 .findByEmail(customerEmail)
                 .orElseThrow(() ->
-                    new RuntimeException("User not found!"));
+                        new ResourceNotFoundException("User not found!"));
 
         return jobRequestRepository
                 .findByCustomer(customer)
                 .stream()
-               
+
                 .sorted((a, b) -> b.getCreatedAt()
-                    .compareTo(a.getCreatedAt()))
+                        .compareTo(a.getCreatedAt()))
                 .map(this::mapToJobResponse)
                 .collect(Collectors.toList());
     }
 
-   
+
     @Override
     public List<JobRequestResponse> getCompletedJobs(
             String customerEmail) {
@@ -116,15 +117,15 @@ public class CustomerDashboardServiceImpl
         User customer = userRepository
                 .findByEmail(customerEmail)
                 .orElseThrow(() ->
-                    new RuntimeException("User not found!"));
+                        new ResourceNotFoundException("User not found!"));
 
         return jobRequestRepository
                 .findByCustomer(customer)
                 .stream()
                 .filter(j -> "COMPLETED"
-                    .equals(j.getStatus()))
+                        .equals(j.getStatus()))
                 .sorted((a, b) -> b.getCreatedAt()
-                    .compareTo(a.getCreatedAt()))
+                        .compareTo(a.getCreatedAt()))
                 .map(this::mapToJobResponse)
                 .collect(Collectors.toList());
     }
@@ -137,7 +138,7 @@ public class CustomerDashboardServiceImpl
         User customer = userRepository
                 .findByEmail(customerEmail)
                 .orElseThrow(() ->
-                    new RuntimeException("User not found!"));
+                        new ResourceNotFoundException("User not found!"));
 
         return reviewRepository
                 .findReviewsByCustomerId(customer.getId())
@@ -146,26 +147,26 @@ public class CustomerDashboardServiceImpl
                 .collect(Collectors.toList());
     }
 
-   
+
     private JobRequestResponse mapToJobResponse(
             Job_Requests job) {
         String workerName = job.getWorker() != null
                 ? job.getWorker().getUser().getName()
                 : null;
         return new JobRequestResponse(
-                job.getId(),                      
-            job.getCustomer().getName(),       
-            job.getCategory(),                 
-            job.getProblemDescription(),       
-            job.getCustomerLocation(),         
-            job.getCustomerCity(),             
-            job.getCustomerLatitude(),         
-            job.getCustomerLongitude(),        
-            job.getBudgetAmount(),             
-            job.getStatus(),                   
-            workerName,                        
-            job.getCreatedAt(),                
-            job.getUpdatedAt()                 
+                job.getId(),
+                job.getCustomer().getName(),
+                job.getCategory(),
+                job.getProblemDescription(),
+                job.getCustomerLocation(),
+                job.getCustomerCity(),
+                job.getCustomerLatitude(),
+                job.getCustomerLongitude(),
+                job.getBudgetAmount(),
+                job.getStatus(),
+                workerName,
+                job.getCreatedAt(),
+                job.getUpdatedAt()
         );
     }
 

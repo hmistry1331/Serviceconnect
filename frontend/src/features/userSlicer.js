@@ -11,8 +11,8 @@ const getStoredAuth = () => {
 
 export const createUserSlice = (set) => ({
   user: {
-    username: "",
-    email: "",
+    username: localStorage.getItem("username") || "",
+    email: localStorage.getItem("email") || "",
     authLoading: false,
     verifying: false,
   },
@@ -39,6 +39,8 @@ export const createUserSlice = (set) => ({
   clearAuthSession: () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+    localStorage.removeItem("username");
+    localStorage.removeItem("email");
 
     set({
       auth: {
@@ -50,6 +52,8 @@ export const createUserSlice = (set) => ({
   },
 
   setUserData: ({ username, email }) => {
+    if(username) localStorage.setItem("username", username);
+    if(email) localStorage.setItem("email", email);
     set((state) => ({
       user: {
         ...state.user,

@@ -1,13 +1,20 @@
 package com.labourproject.project.dto.request;
-
+import jakarta.validation.constraints.*;
 public class JobRequestDTO {
+
 
     private int customerId;
     private String location;
     private String city;
     private Double latitude;
     private Double longitude;
+
+    @Min(value = 0, message = "Budget amount must be a positive number")
     private double budgetAmount;
+
+    @NotBlank(message = "Problem description cannot be blank")
+    @Size(min = 10, max = 1000,
+            message = "Description must be between 10 and 1000 characters!")
     private String problemDescription;
     private String manualCategory;
     private String aidetectedCategory;

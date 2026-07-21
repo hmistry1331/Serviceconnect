@@ -6,6 +6,8 @@ import com.labourproject.project.service.JobRequestService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -19,9 +21,9 @@ public class JobRequestController {
     }
     @PostMapping("/create")
     public ResponseEntity<JobRequestResponse> createRequest(
-            @RequestBody JobRequestDTO dto,
+            @RequestBody @Valid JobRequestDTO dto,
             Authentication authentication) {
-                
+
         return ResponseEntity.ok(jobRequestService.createRequest(dto, authentication.getName()));
     }
     @PutMapping("/accept/{requestId}")
@@ -31,7 +33,7 @@ public class JobRequestController {
 
         String email= authentication.getName();
         return ResponseEntity.ok(
-            jobRequestService.acceptRequest(requestId, email)
+                jobRequestService.acceptRequest(requestId, email)
         );
     }
     @PutMapping("/status/{requestId}")
@@ -39,9 +41,9 @@ public class JobRequestController {
             @PathVariable int requestId,
             @RequestParam String status,
             Authentication authentication
-        ) {
+    ) {
         return ResponseEntity.ok(
-            jobRequestService.updateStatus(requestId, status, authentication.getName())
+                jobRequestService.updateStatus(requestId, status, authentication.getName())
         );
     }
 
@@ -49,7 +51,7 @@ public class JobRequestController {
     public ResponseEntity<List<JobRequestResponse>> getPendingByCategory(
             @RequestParam String category) {
         return ResponseEntity.ok(
-            jobRequestService.getPendingByCategory(category)
+                jobRequestService.getPendingByCategory(category)
         );
     }
 
@@ -73,7 +75,7 @@ public class JobRequestController {
             @PathVariable int customerId,
             Authentication authentication) {
         return ResponseEntity.ok(
-            jobRequestService.getRequestsByCustomer(customerId, authentication.getName())
+                jobRequestService.getRequestsByCustomer(customerId, authentication.getName())
         );
     }
 }

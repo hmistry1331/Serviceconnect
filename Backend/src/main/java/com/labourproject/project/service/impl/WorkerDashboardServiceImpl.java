@@ -4,6 +4,7 @@ import com.labourproject.project.dao.*;
 import com.labourproject.project.dto.request.UpdateLocationRequest;
 import com.labourproject.project.dto.response.*;
 import com.labourproject.project.entity.*;
+import com.labourproject.project.exceptions.ResourceNotFoundException;
 import com.labourproject.project.service.WorkerDashboardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,7 @@ public class WorkerDashboardServiceImpl
     @Autowired
     private ReviewRepository reviewRepository;
 
-   
+
     @Override
     public WorkerDashboardResponse getSummary(
             String workerEmail) {
@@ -36,13 +37,13 @@ public class WorkerDashboardServiceImpl
         User user = userRepository
                 .findByEmail(workerEmail)
                 .orElseThrow(() ->
-                    new RuntimeException("User not found!"));
+                        new ResourceNotFoundException("User not found!"));
 
         Worker worker = workerRepository
                 .findByUserId(user.getId())
                 .orElseThrow(() ->
-                    new RuntimeException(
-                        "Worker profile not found!"));
+                        new ResourceNotFoundException(
+                                "Worker profile not found!"));
 
 
         List<Job_Requests> allJobs = jobRequestRepository
@@ -50,25 +51,25 @@ public class WorkerDashboardServiceImpl
 
         // Active statuses!
         List<String> activeStatuses = Arrays.asList(
-            "ACCEPTED", "QUOTE_RECEIVED", "IN_PROGRESS"
+                "ACCEPTED", "QUOTE_RECEIVED", "IN_PROGRESS"
         );
 
         int totalAccepted = allJobs.size();
 
         int completedJobs = (int) allJobs.stream()
                 .filter(j -> "COMPLETED"
-                    .equals(j.getStatus()))
+                        .equals(j.getStatus()))
                 .count();
 
         int activeJobs = (int) allJobs.stream()
                 .filter(j -> activeStatuses
-                    .contains(j.getStatus()))
+                        .contains(j.getStatus()))
                 .count();
 
-       
+
         double totalEarnings = allJobs.stream()
                 .filter(j -> "COMPLETED"
-                    .equals(j.getStatus()))
+                        .equals(j.getStatus()))
                 .mapToDouble(Job_Requests::getBudgetAmount)
                 .sum();
 
@@ -87,28 +88,25 @@ public class WorkerDashboardServiceImpl
         response.setTradeCategory(worker.getTradeCategory());
         response.setServiceArea(worker.getServiceArea());
         response.setVerificationStatus(
-            worker.getVerificationStatus()
+                worker.getVerificationStatus()
         );
         response.setAvailable(worker.isAvailable());
         response.setTotalJobsAccepted(totalAccepted);
         response.setCompletedJobs(completedJobs);
         response.setActiveJobs(activeJobs);
         response.setTotalEarnings(
-            Math.round(totalEarnings * 100.0) / 100.0
+                Math.round(totalEarnings * 100.0) / 100.0
         );
         response.setAverageRating(
-            avgRating != null
-            ? Math.round(avgRating * 10.0) / 10.0
-            : 0.0
+                avgRating != null
+                        ? Math.round(avgRating * 10.0) / 10.0
+                        : 0.0
         );
         response.setTotalReviews(totalReviews);
 
         return response;
     }
 
-    // -----------------------------------------------
-    // GET ALL ASSIGNED JOBS
-    // -----------------------------------------------
     @Override
     public List<JobRequestResponse> getAllAssignedJobs(
             String workerEmail) {
@@ -119,14 +117,11 @@ public class WorkerDashboardServiceImpl
                 .findByWorker(worker)
                 .stream()
                 .sorted((a, b) -> b.getCreatedAt()
-                    .compareTo(a.getCreatedAt()))
+                        .compareTo(a.getCreatedAt()))
                 .map(this::mapToJobResponse)
                 .collect(Collectors.toList());
     }
 
-    // -----------------------------------------------
-    // GET ACTIVE JOBS
-    // -----------------------------------------------
     @Override
     public List<JobRequestResponse> getActiveJobs(
             String workerEmail) {
@@ -134,23 +129,21 @@ public class WorkerDashboardServiceImpl
         Worker worker = getWorkerFromEmail(workerEmail);
 
         List<String> activeStatuses = Arrays.asList(
-            "ACCEPTED", "QUOTE_RECEIVED", "IN_PROGRESS"
+                "ACCEPTED", "QUOTE_RECEIVED", "IN_PROGRESS"
         );
 
         return jobRequestRepository
                 .findByWorker(worker)
                 .stream()
                 .filter(j -> activeStatuses
-                    .contains(j.getStatus()))
+                        .contains(j.getStatus()))
                 .sorted((a, b) -> b.getCreatedAt()
-                    .compareTo(a.getCreatedAt()))
+                        .compareTo(a.getCreatedAt()))
                 .map(this::mapToJobResponse)
                 .collect(Collectors.toList());
     }
 
-    // -----------------------------------------------
-    // GET COMPLETED JOBS
-    // -----------------------------------------------
+
     @Override
     public List<JobRequestResponse> getCompletedJobs(
             String workerEmail) {
@@ -161,16 +154,14 @@ public class WorkerDashboardServiceImpl
                 .findByWorker(worker)
                 .stream()
                 .filter(j -> "COMPLETED"
-                    .equals(j.getStatus()))
+                        .equals(j.getStatus()))
                 .sorted((a, b) -> b.getCreatedAt()
-                    .compareTo(a.getCreatedAt()))
+                        .compareTo(a.getCreatedAt()))
                 .map(this::mapToJobResponse)
                 .collect(Collectors.toList());
     }
 
-    // -----------------------------------------------
-    // GET MY REVIEWS
-    // -----------------------------------------------
+
     @Override
     public List<ReviewResponse> getMyReviews(
             String workerEmail) {
@@ -184,9 +175,7 @@ public class WorkerDashboardServiceImpl
                 .collect(Collectors.toList());
     }
 
-    // -----------------------------------------------
-    // UPDATE LOCATION
-    // -----------------------------------------------
+
     @Override
     public WorkerDashboardResponse updateLocation(
             String workerEmail, UpdateLocationRequest request) {
@@ -194,13 +183,13 @@ public class WorkerDashboardServiceImpl
         User user = userRepository
                 .findByEmail(workerEmail)
                 .orElseThrow(() ->
-                    new RuntimeException("User not found!"));
+                        new ResourceNotFoundException("User not found!"));
 
         Worker worker = workerRepository
                 .findByUserId(user.getId())
                 .orElseThrow(() ->
-                    new RuntimeException(
-                        "Worker profile not found!"));
+                        new ResourceNotFoundException(
+                                "Worker profile not found!"));
 
         // Update location fields
         if (request.getHomeCity() != null) {
@@ -216,46 +205,46 @@ public class WorkerDashboardServiceImpl
             worker.setServiceArea(request.getServiceArea());
         }
 
-        // Save the updated worker
+
         workerRepository.save(worker);
 
-        // Return updated summary
+
         return getSummary(workerEmail);
     }
 
-    
+
     private Worker getWorkerFromEmail(String email) {
         User user = userRepository
                 .findByEmail(email)
                 .orElseThrow(() ->
-                    new RuntimeException("User not found!"));
+                        new ResourceNotFoundException("User not found!"));
 
         return workerRepository
                 .findByUserId(user.getId())
                 .orElseThrow(() ->
-                    new RuntimeException(
-                        "Worker profile not found!"));
+                        new ResourceNotFoundException(
+                                "Worker profile not found!"));
     }
 
-     private JobRequestResponse mapToJobResponse(
+    private JobRequestResponse mapToJobResponse(
             Job_Requests job) {
         String workerName = job.getWorker() != null
                 ? job.getWorker().getUser().getName()
                 : null;
         return new JobRequestResponse(
-                 job.getId(),                  
-            job.getCustomer().getName(),       
-            job.getCategory(),                 
-            job.getProblemDescription(),       
-            job.getCustomerLocation(),         
-            job.getCustomerCity(),             
-            job.getCustomerLatitude(),         
-            job.getCustomerLongitude(),        
-            job.getBudgetAmount(),             
-            job.getStatus(),                   
-            workerName,                        
-            job.getCreatedAt(),                
-            job.getUpdatedAt()                 
+                job.getId(),
+                job.getCustomer().getName(),
+                job.getCategory(),
+                job.getProblemDescription(),
+                job.getCustomerLocation(),
+                job.getCustomerCity(),
+                job.getCustomerLatitude(),
+                job.getCustomerLongitude(),
+                job.getBudgetAmount(),
+                job.getStatus(),
+                workerName,
+                job.getCreatedAt(),
+                job.getUpdatedAt()
         );
     }
 

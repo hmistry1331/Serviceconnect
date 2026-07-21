@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    @Value("${google.oauth.client-id:}") 
+    @Value("${google.oauth.client-id:}")
     private String googleClientId;
 
     @Value("${google.oauth.client-secret:}")
@@ -48,9 +48,9 @@ public class UserServiceImpl implements UserService {
     private String googleRedirectUri;
 
     public  UserServiceImpl(UserRepository userRepository,
-            WorkerRepository workerRepository,
-            PasswordEncoder passwordEncoder,
-            JwtUtil jwtUtil) {
+                            WorkerRepository workerRepository,
+                            PasswordEncoder passwordEncoder,
+                            JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.workerRepository = workerRepository;
         this.passwordEncoder = passwordEncoder;
@@ -137,7 +137,7 @@ public class UserServiceImpl implements UserService {
         String token = jwtUtil.generateToken(
                 user.getEmail(),
                 normalizedRole);
-        return new AuthResponse("Login successful!", user.getRole(), true, token);
+        return new AuthResponse("Login successful!", user.getRole(), true, token,user.getEmail(),user.getName());
     }
 
     @Override
@@ -235,7 +235,7 @@ public class UserServiceImpl implements UserService {
             if ("PENDING_PROFILE".equals(user.getRole())) {
                 String tempToken = jwtUtil.generateToken(user.getEmail(), "PENDING_PROFILE");
                 AuthResponse response = new AuthResponse("Please complete your profile.", "PENDING_PROFILE", true,
-                        tempToken);
+                        tempToken,user.getEmail(),user.getName());
                 response.setRequireMoreinfo(true); // Frontend will check this flag
                 response.setEmail(user.getEmail()); // Send back the email for the frontend to pre-fill
                 return response;
@@ -245,7 +245,7 @@ public class UserServiceImpl implements UserService {
             String normalizedRole = normalizeRoleForLogin(user.getRole());
             String token = jwtUtil.generateToken(user.getEmail(), normalizedRole);
 
-            return new AuthResponse("Google login successful!", user.getRole(), true, token);
+            return new AuthResponse("Google login successful!", user.getRole(), true, token,user.getEmail(),user.getName());
 
         } catch (RestClientException ex) {
             return new AuthResponse("Google authentication failed. Please try again.", null, false);
@@ -302,7 +302,7 @@ public class UserServiceImpl implements UserService {
 
         // Generate their final, real token
         String token = jwtUtil.generateToken(user.getEmail(), resolvedRole);
-        return new AuthResponse("Profile completed successfully!", resolvedRole, true, token);
+        return new AuthResponse("Profile completed successfully!", resolvedRole, true, token,user.getEmail(),user.getName());
     }
 
     private String normalizeRole(String role) {
