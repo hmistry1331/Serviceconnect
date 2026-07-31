@@ -12,7 +12,7 @@ export default function Navbar() {
     const [userRole, setUserRole] = useState("");
     const isLoggedInFromStore = useAppStore((state) => state.auth.isLoggedIn);
     const clearAuthSession = useAppStore((state) => state.clearAuthSession);
-    const username= useAppStore((state) => state.username);
+    const username= useAppStore((state) => state.user.username);
     const navigate = useNavigate();
     const location = useLocation();
     const isLoggedIn = isLoggedInFromStore || Boolean(localStorage.getItem("token"));
